@@ -2,7 +2,7 @@
 
 Shell script to install a `MoonDEX Coin Masternode` on a Linux server running Ubuntu 16.04. Supports IPv4, IPv6 and multiple nodes on a single VPS.
 
-**Make sure you read all the instructions below before using this script, it does not installed your masternode under the root account and as such requires different commands to most other scripts**
+**Make sure you read all the instructions below before using this script, it does not install your masternode under the root account and as such requires different commands to most other scripts**
 
 
 ## Installation
@@ -57,7 +57,7 @@ You are now ready to configure your local wallet and finish the masternode setup
 ## Multiple master nodes on one server
 The script allows for multiple nodes to be setup on the same server, using the same IP address and different ports. It also allows for either IPv4 and/or IPv6 addresses to be used. 
 
-During the execution of the script you have the opportunity to decide on a port and rpc port to use for the node. Each node runs under are different user account which the script creates for you.
+During the execution of the script you have the opportunity to decide on a port to use for the node. Each node runs under are different user account which the script creates for you.
 
 **Important:** when installing more than one masternode, make sure the port number you choose is above 1024 and at least 2 greater than any other node you have running. It needs to be 2 as the masternode uses the port you enter and the masternode rpcserver uses the next highest port.
 
