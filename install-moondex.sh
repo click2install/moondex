@@ -416,7 +416,7 @@ function show_output()
  echo -e "                                                 ${COIN_NAME} installation completed${NC}"
  echo
  echo -e " Your ${COIN_NAME} coin master node is up and running." 
- echo -e "  - it is running as the${GREEN}${USER_NAME}${NC} user, listening on port ${GREEN}${PORT}${NC} at your VPS address ${GREEN}${NODEIP}${NC}."
+ echo -e "  - it is running as the ${GREEN}${USER_NAME}${NC} user, listening on port ${GREEN}${PORT}${NC} at your VPS address ${GREEN}${NODEIP}${NC}."
  echo -e "  - the ${GREEN}${USER_NAME}${NC} password is ${GREEN}${USERPASS}${NC}"
  echo -e "  - the ${COIN_NAME} configuration file is located at ${GREEN}${HOME_FOLDER}/${CONFIG_FILE}${NC}"
  echo -e "  - the masternode privkey is ${GREEN}${PRIVKEY}${NC}"
