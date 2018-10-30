@@ -111,21 +111,6 @@ function prepare_system()
     virtualenv \
     wget
   clear
-  
-  if [ "$?" -gt "0" ]; then
-      echo -e "${RED}Not all of the required packages were installed correctly.\n"
-      echo -e "Try to install them manually by running the following commands:${NC}\n"
-      echo -e "apt update"
-      echo -e "apt -y install software-properties-common"
-      echo -e "apt-add-repository -y ppa:bitcoin/bitcoin"
-      echo -e "apt update"
-      echo -e "apt install -y make software-properties-common build-essential libtool autoconf libssl-dev libboost-dev libboost-chrono-dev libboost-filesystem-dev \
-    libboost-program-options-dev libboost-system-dev libboost-test-dev libboost-thread-dev automake git wget curl libdb4.8-dev libdb4.8++-dev \
-    bsdmainutils libminiupnpc-dev libgmp3-dev ufw pkg-config libevent-dev libdb5.3++ unzip libzmq5 htop pwgen"
-   exit 1
-  fi
-
-  clear
 }
 
 function deploy_binary() 
@@ -416,7 +401,7 @@ function show_output()
  echo -e "                                                 ${COIN_NAME} installation completed${NC}"
  echo
  echo -e " Your ${COIN_NAME} coin master node is up and running." 
- echo -e "  - it is running as the${GREEN}${USER_NAME}${NC} user, listening on port ${GREEN}${PORT}${NC} at your VPS address ${GREEN}${NODEIP}${NC}."
+ echo -e "  - it is running as the ${GREEN}${USER_NAME}${NC} user, listening on port ${GREEN}${PORT}${NC} at your VPS address ${GREEN}${NODEIP}${NC}."
  echo -e "  - the ${GREEN}${USER_NAME}${NC} password is ${GREEN}${USERPASS}${NC}"
  echo -e "  - the ${COIN_NAME} configuration file is located at ${GREEN}${HOME_FOLDER}/${CONFIG_FILE}${NC}"
  echo -e "  - the masternode privkey is ${GREEN}${PRIVKEY}${NC}"
