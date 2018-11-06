@@ -86,10 +86,10 @@ This script will install the masternode binaries (executable files) `moondexd` a
 
 The script involves these steps requiring responses from you:
 1. **New Installation:** If this is detected as the first MDEX masternode on the vps, it will proceed as normal.  If it detects another pre-existing MDEX masternode, it will ask you if you wish to proceed or abort.
-1. **IP Address:** The script will identify all available IP addresses on the VPS.  Select the address you wish to use.  Do **not** select an address that is already in use by another MDEX masternode.  Also, at present, MDEX does not support IPv6 addresses.
-1. **Masternode Key:** Either paste a desired masternode key, or press *Enter* to have the script generate one for you.  It will be reported to you at the end so you can copy it into your records.
 1. **User Name:** Provide a user name. This is the user that the masternode will be installed and run under (again, this is NOT the root user).
 1. **RPCPORT:** Provide a value for the RPCPORT setting (recommended values are provided in the script).  Each MDEX masternode on the VPS should use a *different* rpcport value.
+1. **IP Address:** The script will identify all available IP addresses on the VPS.  Select the address you wish to use.  Do **not** select an address that is already in use by another MDEX masternode.  Also, at present, MDEX does not support IPv6 addresses.
+1. **Masternode Key:** Either paste a desired masternode key, or press *Enter* to have the script generate one for you.  It will be reported to you at the end so you can copy it into your records.
 1. **Monitor syncing:** You can (optionally) monitor the progress of the syncing and status of the MN when prompted.  When you are done syncing (or just tired of watching), you can press **Ctrl+c** to return back to the installation script screen.
 1. **Record the configuration information:** As the final step of the installation, the script will provide a range of configuration information that you should copy for your records (addresses, private key, passwords, etc.).
 
