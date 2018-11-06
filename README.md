@@ -3,8 +3,7 @@
 Shell script to install a `MoonDEX Coin Masternode` on a Linux server running Ubuntu 16.04. Supports IPv4 and multiple nodes on a single VPS.  IPv6 is supported by the script, but the current MoonDEX wallets do not support IPv6.  This script does not configure your VPS's iptables entries and will require separate install steps (see instructions) to make additional masternodes work correctly if you install more than one.
 
 **IMPORTANT:**
-```Make sure you read all the instructions below before using this script, it does _not_ install your masternode under the root account and as such requires different commands than most other scripts.
-```
+*Make sure you read all the instructions below before using this script, it does _not_ install your masternode under the root account and as such requires different commands than most other scripts.*
 
 Donations for the creation and maintenance of this script are welcome at:
 &nbsp;
@@ -39,7 +38,7 @@ In your local wallet (typically a GUI wallet in Windows, etc.)
 1. In the masternodes.conf file, add an entry that looks like: [address-name from above] [ip:port of your VPS from script output] [privkey from script output] [txid from from above] [tx output index from above] -
 Your *masternodes.conf* file entry should look like: ```MN-1 127.0.0.2:8906 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2jcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 1``` and it must be all on one line in your *masternode configuration* file
 1. Save and close your *masternodes.conf* file
-1. Close your wallet and restart it.
+1. *Close* your wallet and *restart* it.
 1. Proceed with the VPS setup (you can proceed even if the confirmations have not yet reached 15).
 
 
@@ -85,26 +84,23 @@ This script is intended to be used on a clean server, or a server that has used 
 This script will install the masternode binaries (executable files) `moondexd` and `moondex-cli` into the common directory `/usr/local/bin`.
 
 2. When you are finished this process you will get some information on what has been done as well as some important information you will need for your cold wallet setup.
-3. **Copy/paste the output of this script into a text file and keep it safe.**
-
+3. **Copy/paste the output of this script into a text file (or similar) and keep it safe.**
+4.
 
 ## 4. Start your Masternode from your local wallet (GUI wallet)
-The script assumes you are running a cold wallet on your local PC and this script will execute on a Ubuntu Linux VPS (server). The steps involved are:
+After completing the above steps on the VPS, return to your local wallet (Windows, etc.)
 
-1. Run the masternode installation script as per the [instructions above](https://github.com/click2install/moondex#installation).
-2. confirm it is fully synced.
-You are now ready to configure your local wallet and finish the masternode setup
-3. Ensure that your GUI wallet is running and fully synced.
-4. Confirm that the new MN is listed in the local wallet
- 13. Go to Masternodes > My MasterNodes
- 14. Make sure the VPS node is fully synchronised and at the correct block height before trying to activate it from the wallet.
- 15. Click the row for the masternode you just added
- 16. Right click > Start Alias
- 17. Your node should now be running successfully, wait for some time for it to connect with the network and the `Active` time to start counting up.
+1. Confirm the local wallet is fully synced.
+1. Confirm that the new MN is listed in the *My Masternodes* tab under the *Masternodes* section in your local wallet.  At this point, it's status will be something like **MISSING**.
+1. Make sure the VPS node is fully synchronised and at the correct block height before trying to activate it from the wallet.
+1. Click the row for the masternode you just added (select that masternode)
+1. Right click > *Start Alias* to start the masternode
+1. You should see the status switch from **MISSING** to **PRE-ENABLED**, and then (after 20ish minutes), to **ENABLED**.  Your node should now be running successfully.
+1. Performa a final confirmation check back on the VPS by running (under the user name for the masternode, not root) ```/usr/local/bin/moondex-cli masternode status```.  Look for a message along the lines of *Masternode Successfully Started*.
 
  &nbsp;
 
-## Multiple master nodes on one server
+## 5. Multiple master nodes on one server
 The script allows for multiple nodes to be setup on the same server, using the same IP address and different ports. It also allows for either IPv4 and/or IPv6 addresses to be used.
 
 During the execution of the script you have the opportunity to decide on a port to use for the node. Each node runs under are different user account which the script creates for you.
