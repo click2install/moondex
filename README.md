@@ -2,9 +2,9 @@
 ## Overview
 Shell script to install a `MoonDEX Coin Masternode` on a Linux server running Ubuntu 16.04. Supports IPv4 and multiple nodes on a single VPS.  IPv6 is supported by the script, but the current MoonDEX wallets do not support IPv6.  This script does not configure your VPS's iptables entries and will require separate install steps (see instructions) to make additional masternodes work correctly if you install more than one.
 
-###IMPORTANT:
+### IMPORTANT:
 ```
-**Make sure you read all the instructions below before using this script, it does _not_ install your masternode under the root account and as such requires different commands than most other scripts**
+Make sure you read all the instructions below before using this script, it does _not_ install your masternode under the root account and as such requires different commands than most other scripts
 ```
 
 Donations for the creation and maintenance of this script are welcome at:
@@ -28,23 +28,23 @@ BTC: 1DJdhFp6CiVZSBSsXcecp1FnuHXDcsYQPu
 
 
 ## 1. Configuring your Masternode Collateral and Rewards Address
-In your local wallet (typically a GUI wallet in windows, etc.)
+In your local wallet (typically a GUI wallet in Windows, etc.)
 1. Make sure you have downloaded the latest wallet from https://github.com/Moondex/MoonDEXCoin/releases
 1. Install the wallet on your local PC
 1. Start the wallet and let it completely synchronize to the network - this will take some time
 1. Create a new Receiving Address from the wallet's *File* menu and name it appropriately, e.g. MN-1
 1. Unlock your wallet (if necessary) and send _exactly_ 2,500 MDEX to the address created above
-1. Wait for the transaction from step #5 to be fully confirmed (15 confirmations is good). Look for a tick in the first column in your transactions tab to verify this.
-1. Open your wallet's *Debug Console* and type: `masternode outputs`.  Record the reported *transaction ID* and *transaction output index* for the new MN.
+1. Wait for a minimum of 15 confirmations before starting the masternode in the GUI (see steps below).  In the meanwhile, you can proceed with the following steps.
+1. Open your wallet's *Debug Console* and type: `masternode outputs`.  Record the reported *transaction ID* and *transaction output index* for the new MN.  These should be a long series of characters, followed by a single digit (each in double quotes).
 1. Open your *masternode configuration file* from the wallet's *Tools* menu item.
 1. In the masternodes.conf file, add an entry that looks like: [address-name from above] [ip:port of your VPS from script output] [privkey from script output] [txid from from above] [tx output index from above] -
-Your *masternodes.conf* file entry should look like: MN-1 127.0.0.2:8906 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0 and it must be all on one line in your masternodes config file
-1. Save and close your masternodes.conf file
-1. Close your wallet and restart
-1. Wait for a minimum of 15 confirmations before starting the masternode in the GUI (see steps below).  In the meanwhile, you can proceed with the following steps.
+Your *masternodes.conf* file entry should look like: **MN-1 127.0.0.2:8906 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2jcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 1** and it must be all on one line in your masternodes config file
+1. Save and close your *masternodes.conf* file
+1. Close your wallet and restart it.
+1. Proceed with the VPS setup (you can proceed even if the confirmations have not yet reached 15).
 
 
-## 2. Prepare a VPS for the Masternode(s)
+## 2. Prepare VPS for the Masternode(s)
 1. Create new VPS (for example, on VULTR) using Ubuntu 16.04 64 bit and IPv4
 1. Record the VPS info (Label, IP, login, pswd, etc.)
 1. On the "Settings" tab (assuming the VPS is on VULTR) select the IPv4 settings and Add Another IPv4 Address button. You can find instructions on adding the additional IP address in the VULTR help docs at: https://www.vultr.com/docs/add-secondary-ipv4-address
