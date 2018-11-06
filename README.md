@@ -2,22 +2,55 @@
 ## Overview
 Shell script to install a `MoonDEX Coin Masternode` on a Linux server running Ubuntu 16.04. Supports IPv4 and multiple nodes on a single VPS.  IPv6 is supported by the script, but the current MoonDEX wallets do not support IPv6.  This script does not configure your VPS's iptables entries and will require separate install steps (see instructions) to make additional masternodes work correctly if you install more than one.
 
-**Make sure you read all the instructions below before using this script, it does not install your masternode under the root account and as such requires different commands to most other scripts**
+###IMPORTANT:
+```
+**Make sure you read all the instructions below before using this script, it does _not_ install your masternode under the root account and as such requires different commands than most other scripts**
+```
+
+Donations for the creation and maintenance of this script are welcome at:
+&nbsp;
+
+MDEX: XoDpG5yrZ3UTtAywge5wNZAbhmxJi7SZbh
+
+BTC: 1DJdhFp6CiVZSBSsXcecp1FnuHXDcsYQPu
+
+&nbsp;
+
 
 ### Summary of steps
 1. Configure VPS to have one IP for each MDEX MN being installed on it (through VPS provider).
-1. Set up the first masternode and let it sync.
+2. Set up the first masternode and let it sync.
 3. Configure your local wallet (GUI wallet) to work with the MN and start the new MN in the local wallet.
 4. Confirm successful startup of the MN
 5. Repeat from step 2 (above) for each additional MDEX masternode
 
-## 1. Prepare a VPS for the Masternode(s)
+&nbsp;
+
+
+## 1. Configuring your Masternode Collateral and Rewards Address
+In your local wallet (typically a GUI wallet in windows, etc.)
+1. Make sure you have downloaded the latest wallet from https://github.com/Moondex/MoonDEXCoin/releases
+1. Install the wallet on your local PC
+1. Start the wallet and let it completely synchronize to the network - this will take some time
+1. Create a new Receiving Address from the wallet's *File* menu and name it appropriately, e.g. MN-1
+1. Unlock your wallet (if necessary) and send _exactly_ 2,500 MDEX to the address created above
+1. Wait for the transaction from step #5 to be fully confirmed (15 confirmations is good). Look for a tick in the first column in your transactions tab to verify this.
+1. Open your wallet's *Debug Console* and type: `masternode outputs`.  Record the reported *transaction ID* and *transaction output index* for the new MN.
+1. Open your *masternode configuration file* from the wallet's *Tools* menu item.
+1. In the masternodes.conf file, add an entry that looks like: [address-name from above] [ip:port of your VPS from script output] [privkey from script output] [txid from from above] [tx output index from above] -
+Your *masternodes.conf* file entry should look like: MN-1 127.0.0.2:8906 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0 and it must be all on one line in your masternodes config file
+1. Save and close your masternodes.conf file
+1. Close your wallet and restart
+1. Wait for a minimum of 15 confirmations before starting the masternode in the GUI (see steps below).  In the meanwhile, you can proceed with the following steps.
+
+
+## 2. Prepare a VPS for the Masternode(s)
 1. Create new VPS (for example, on VULTR) using Ubuntu 16.04 64 bit and IPv4
 1. Record the VPS info (Label, IP, login, pswd, etc.)
 1. On the "Settings" tab (assuming the VPS is on VULTR) select the IPv4 settings and Add Another IPv4 Address button. You can find instructions on adding the additional IP address in the VULTR help docs at: https://www.vultr.com/docs/add-secondary-ipv4-address
 1. Record the new (additional) IP address.
 1. Log into the new VPS using Putty (or similar)
-1. Back on the VULTR IPv4 settings page, locate and click on the link for networking configuration.  This will bring you to a page that is auto-generated (customized) to give you the exact text that you can copy/paste into the file `/etc/network/interfaces` on your VPS using an editor like `nano` (available on most Ubuntu VPSs).  You should not have to tweak anything in the copied text (it’s pretty simple).  Make sure to copy the text from the example code section for *Ubuntu 16.xx*.  For this example (two MNs using two IPv4 addresses), this looks like:
+1. Back on the VULTR IPv4 settings page, locate and click on the link for *networking configuration*.  This will bring you to a page that is auto-generated (customized) to give you the exact text that you can copy/paste into the file `/etc/network/interfaces` on your VPS using an editor like `nano` (available on most Ubuntu VPSs).  You should not have to tweak anything in the copied text (it’s pretty simple).  Make sure to copy the text from the example code section for *Ubuntu 16.xx*.  For this example (two MNs using two IPv4 addresses), this looks something like:
 ```auto lo
 iface lo inet loopback
 
@@ -41,29 +74,18 @@ iface ens3:1 inet static
 ```
 
 
-## 1. Installation
-To start the installation, login as `root` to your VPS and run the two commands listed below. Note that the masternode does not run as root but as a user that the script will create. The script, however, needs to run as root so your VPS can be configured correctly.
+## 3. Installation
+To start the installation, login as `root` to your VPS and run the two commands listed below. Note that the masternode _does not run as root_ but as a user that the script will create. The installation script, however, needs to run as root so your VPS can be configured correctly.
 
 ```
 wget -q https://github.com/click2install/moondex/raw/master/install-moondex.sh  
 bash install-moondex.sh
 ```
-This script is intended to be used on a clean server, or a server that has used this script to install 1 or more previous nodes.
+This script is intended to be used on a clean server, or a server that has used this script to install 1 or more previous MDEX nodes.  It may also work on a VPS with masternodes of other coins, but that may involve additional measures that are beyond the scope of these instructions (give it a shot if you want, but be prepared to troubleshoot).
 
-This script will work alongside masternodes that were installed by other means provided the masternode binaries `moondexd` and `moondex-cli` are installed to `/usr/local/bin`.
-
-
-**Make sure you read all the instructions below before using this script, it does not install your masternode under the root account and as such requires different commands to most other scripts**
+This script will install the masternode binaries (executable files) `moondexd` and `moondex-cli` into the common directory `/usr/local/bin`.
 
 
-Donations for the creation and maintenance of this script are welcome at:
-&nbsp;
-
-MDEX: XoDpG5yrZ3UTtAywge5wNZAbhmxJi7SZbh
-
-BTC: 1DJdhFp6CiVZSBSsXcecp1FnuHXDcsYQPu
-
-&nbsp;
 
 ## How to setup your masternode with this script and a cold wallet on your PC
 The script assumes you are running a cold wallet on your local PC and this script will execute on a Ubuntu Linux VPS (server). The steps involved are:
