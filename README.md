@@ -3,7 +3,7 @@
 Shell script to install a `MoonDEX Coin Masternode` on a Linux server running Ubuntu 16.04. Supports IPv4 and multiple nodes on a single VPS.  IPv6 is supported by the script, but the current MoonDEX wallets do not support IPv6.  This script does not configure your VPS's iptables entries and will require separate install steps (see instructions) to make additional masternodes work correctly if you install more than one.
 
 **IMPORTANT:**
-*Make sure you read all the instructions below before using this script, it does _not_ install your masternode under the root account and as such requires different commands than most other scripts.*
+*Make sure you read all the instructions below before using this script.  It does not install your masternode under the root account and as such, requires slightly different commands than most other scripts.*
 
 Donations for the creation and maintenance of this script are welcome at:
 &nbsp;
@@ -82,6 +82,13 @@ bash install-moondex.sh
 This script is intended to be used on a clean server, or a server that has used this script to install 1 or more previous MDEX nodes.  It may also work on a VPS with masternodes of other coins, but that may involve additional measures that are beyond the scope of these instructions (give it a shot if you want, but be prepared to troubleshoot).
 
 This script will install the masternode binaries (executable files) `moondexd` and `moondex-cli` into the common directory `/usr/local/bin`.
+
+The script involves these responses from you:
+### A. Provide a user name.  This is the user that the masternode will be installed and run under (again, this is NOT the root user).
+### B. Provide a value for the RPCPORT setting (recommended values are provided in the script)
+###    You can (optionally) monitor the progress of the syncing and status of the MN when prompted.  When you are done (or just tired of watching), you can press Ctrl+c to return back to the install screen.
+###    Record the configuration information provided at the end of the installation.
+
 
 2. When you are finished this process you will get some information on what has been done as well as some important information you will need for your cold wallet setup.
 3. **Copy/paste the output of this script into a text file (or similar) and keep it safe.**
