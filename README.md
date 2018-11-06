@@ -45,10 +45,10 @@ Your *masternodes.conf* file entry should look like: ```MN-1 127.0.0.2:8906 93Ha
 ## 2. Prepare VPS for the Masternode(s)
 1. Create new VPS (for example, on VULTR) using Ubuntu 16.04 64 bit and IPv4
 1. Record the VPS info (Label, IP, login, pswd, etc.)
-1. On the "Settings" tab (assuming the VPS is on VULTR) select the IPv4 settings and Add Another IPv4 Address button. You can find instructions on adding the additional IP address in the VULTR help docs at: https://www.vultr.com/docs/add-secondary-ipv4-address
-1. Record the new (additional) IP address.
-1. Log into the new VPS using Putty (or similar)
-1. Back on the VULTR IPv4 settings page, locate and click on the link for *networking configuration*.  This will bring you to a page that is auto-generated (customized) to give you the exact text that you can copy/paste into the file `/etc/network/interfaces` on your VPS using an editor like `nano` (available on most Ubuntu VPSs).  You should not have to tweak anything in the copied text (it’s pretty simple).  Make sure to copy the text from the example code section for *Ubuntu 16.xx*.  For this example (two MNs using two IPv4 addresses), this looks something like:
+1. **If you are intending to install multiple MDEX masternodes on the VPS, you will need to add the additional IP address from the control panel of your VPS provider.**  On the "Settings" tab (assuming the VPS is on VULTR) select the IPv4 settings and Add Another IPv4 Address button. You can find instructions on adding the additional IP address in the VULTR help docs at: https://www.vultr.com/docs/add-secondary-ipv4-address
+  1. Record the new (additional) IP address.
+  1. Log into the new VPS using Putty (or similar)
+  1. Back on the VULTR IPv4 settings page, locate and click on the link for *networking configuration*.  This will bring you to a page that is auto-generated (customized) to give you the exact text that you can copy/paste into the file `/etc/network/interfaces` on your VPS using an editor like `nano` (available on most Ubuntu VPSs).  You should not have to tweak anything in the copied text (it’s pretty simple).  Make sure to copy the text from the example code section for *Ubuntu 16.xx*.  For this example (two MNs using two IPv4 addresses), this looks something like:
 ```auto lo
 iface lo inet loopback
 
@@ -111,7 +111,7 @@ After completing the above steps on the VPS, return to your local wallet (Window
 ## 5. Multiple master nodes on one server
 The script allows for multiple nodes to be setup on the same server, using different IP addresses and different rpcport values.  The script will automatically detect if your installation is the first on the VPS, or if it is a multiple-MN installation.  
 
-Generally, the overall installation process is the same for additional MDEX masternodes on the same VPS (Steps 1,3,4 above).
+Generally, the overall installation process is the same for additional MDEX masternodes on the same VPS (Steps 1-4 above).
 
 **If you do setup multiple masternodes on a single VPS, make sure the VPS hardware is capable of running more than one masternode or your masternode stability and rewards will suffer. You have been warned.**
 
