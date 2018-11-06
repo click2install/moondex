@@ -24,7 +24,6 @@ BTC: 1DJdhFp6CiVZSBSsXcecp1FnuHXDcsYQPu
 
 &nbsp;
 
-
 ## 1. Configuring your Masternode Collateral and Rewards Address
 In your local wallet (typically a GUI wallet in Windows, etc.)
 1. Make sure you have downloaded the latest wallet from https://github.com/Moondex/MoonDEXCoin/releases
@@ -41,6 +40,7 @@ Your *masternodes.conf* file entry should look like: ```MN-1 127.0.0.2:8906 93Ha
 1. *Close* your wallet and *restart* it.
 1. Proceed with the VPS setup (you can proceed even if the confirmations have not yet reached 15).
 
+&nbsp;
 
 ## 2. Prepare VPS for the Masternode(s)
 1. Create new VPS (for example, on VULTR) using Ubuntu 16.04 64 bit and IPv4
@@ -71,6 +71,7 @@ iface ens3:1 inet static
 	netmask 255.255.254.0
 ```
 
+&nbsp;
 
 ## 3. Run the Installation Script
 To start the installation, login as `root` to your VPS and run the two commands listed below. Note that the masternode __does not run as root__ but as a user that the script will create. The installation script, however, needs to run as root so your VPS can be configured correctly.
@@ -119,8 +120,7 @@ Note that multiple masternodes use only one instance of the executable `moondexd
 
 &nbsp;
 
-
-## Masternode commands
+## 6. Masternode commands
 Because the masternode runs under a user account (not *root*), you cannot login as root to your server and run `moondex-cli masternode status` in the "usual way".  If you do, you will get an error. You need to switch the to the user that you installed the masternode under when running the script.
 
 You can query each of your masternodes by first switching to the user the masternode is running under:
@@ -147,7 +147,9 @@ The following commands can then be run under the user you just switched to.
  moondex-cli masternode status
 ```
 
-## Removing a masternode and user account
+&nbsp;
+
+## 7. Removing a masternode and user account
 If something goes wrong with your installation or you want to remove a masternode, you can do so with the following command.
 ```
  userdel -r <username>
@@ -161,7 +163,7 @@ rm -rf /usr/local/bin/moondex*
 
 &nbsp;
 
-## Security
+## 8. Security
 The script will set up the required firewall rules to only allow inbound node communications, whilst blocking all other inbound ports and all outbound ports.
 
 The [fail2ban](https://www.fail2ban.org/wiki/index.php/Main_Page) package is also used to mitigate DDoS attempts on your server.
@@ -176,7 +178,7 @@ If the above precautions are taken you will need to `su root` before running the
 
 &nbsp;
 
-## Disclaimer
+## 9. Disclaimer
 Whilst effort has been put into maintaining and testing this script, it will automatically modify settings on your Ubuntu server - use at your own risk. By downloading this script you are accepting all responsibility for any actions it performs on your server.
 
 &nbsp;
