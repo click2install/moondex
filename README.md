@@ -3,8 +3,7 @@
 Shell script to install a `MoonDEX Coin Masternode` on a Linux server running Ubuntu 16.04. Supports IPv4 and multiple nodes on a single VPS.  IPv6 is supported by the script, but the current MoonDEX wallets do not support IPv6.  This script does not configure your VPS's iptables entries and will require separate install steps (see instructions) to make additional masternodes work correctly if you install more than one.
 
 ### IMPORTANT:
-```
-Make sure you read all the instructions below before using this script, it does _not_ install your masternode under the root account and as such requires different commands than most other scripts
+```Make sure you read all the instructions below before using this script, it does _not_ install your masternode under the root account and as such requires different commands than most other scripts
 ```
 
 Donations for the creation and maintenance of this script are welcome at:
@@ -36,9 +35,9 @@ In your local wallet (typically a GUI wallet in Windows, etc.)
 1. Unlock your wallet (if necessary) and send _exactly_ 2,500 MDEX to the address created above
 1. Wait for a minimum of 15 confirmations before starting the masternode in the GUI (see steps below).  In the meanwhile, you can proceed with the following steps.
 1. Open your wallet's *Debug Console* and type: `masternode outputs`.  Record the reported *transaction ID* and *transaction output index* for the new MN.  These should be a long series of characters, followed by a single digit (each in double quotes).
-1. Open your *masternode configuration file* from the wallet's *Tools* menu item.
+1. Open your *masternode configuration* file (*masternodes.conf*) from the wallet's *Tools* menu.
 1. In the masternodes.conf file, add an entry that looks like: [address-name from above] [ip:port of your VPS from script output] [privkey from script output] [txid from from above] [tx output index from above] -
-Your *masternodes.conf* file entry should look like: **MN-1 127.0.0.2:8906 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2jcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 1** and it must be all on one line in your masternodes config file
+Your *masternodes.conf* file entry should look like: ```MN-1 127.0.0.2:8906 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2jcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 1``` and it must be all on one line in your *masternode configuration* file
 1. Save and close your *masternodes.conf* file
 1. Close your wallet and restart it.
 1. Proceed with the VPS setup (you can proceed even if the confirmations have not yet reached 15).
@@ -74,8 +73,8 @@ iface ens3:1 inet static
 ```
 
 
-## 3. Installation
-To start the installation, login as `root` to your VPS and run the two commands listed below. Note that the masternode _does not run as root_ but as a user that the script will create. The installation script, however, needs to run as root so your VPS can be configured correctly.
+## 3. Run the Installation Script
+To start the installation, login as `root` to your VPS and run the two commands listed below. Note that the masternode ~does not run as root~ but as a user that the script will create. The installation script, however, needs to run as root so your VPS can be configured correctly.
 
 ```
 wget -q https://github.com/click2install/moondex/raw/master/install-moondex.sh  
