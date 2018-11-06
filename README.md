@@ -1,11 +1,47 @@
-# MoonDEX Coin
-
+# MoonDEX Coin Masternode Installation Script
+## Overview
 Shell script to install a `MoonDEX Coin Masternode` on a Linux server running Ubuntu 16.04. Supports IPv4 and multiple nodes on a single VPS.  IPv6 is supported by the script, but the current MoonDEX wallets do not support IPv6.  This script does not configure your VPS's iptables entries and will require separate install steps (see instructions) to make additional masternodes work correctly if you install more than one.
 
 **Make sure you read all the instructions below before using this script, it does not install your masternode under the root account and as such requires different commands to most other scripts**
 
+### Summary of steps
+1. Configure VPS to have one IP for each MDEX MN being installed on it (through VPS provider).
+1. Set up the first masternode and let it sync.
+3. Configure your local wallet (GUI wallet) to work with the MN and start the new MN in the local wallet.
+4. Confirm successful startup of the MN
+5. Repeat from step 2 (above) for each additional MDEX masternode
 
-## Installation
+## 1. Prepare a VPS for the Masternode(s)
+1. Create new VPS (for example, on VULTR) using Ubuntu 16.04 64 bit and IPv4
+1. Record the VPS info (Label, IP, login, pswd, etc.)
+1. On the "Settings" tab (assuming the VPS is on VULTR) select the IPv4 settings and Add Another IPv4 Address button. You can find instructions on adding the additional IP address in the VULTR help docs at: https://www.vultr.com/docs/add-secondary-ipv4-address
+1. Record the new (additional) IP address.
+1. Log into the new VPS using Putty (or similar)
+1. Back on the VULTR IPv4 settings page, locate and click on the link for networking configuration.  This will bring you to a page that is auto-generated (customized) to give you the exact text that you can copy/paste into the file `/etc/network/interfaces` on your VPS using an editor like `nano` (available on most Ubuntu VPSs).  You should not have to tweak anything in the copied text (it’s pretty simple).  Make sure to copy the text from the example code section for *Ubuntu 16.xx*.  For this example (two MNs using two IPv4 addresses), this looks like:
+```auto lo
+iface lo inet loopback
+
+auto ens3
+iface ens3 inet static
+	address XXX.XXX.XXX.XXX
+	netmask 255.255.254.0
+	gateway XXX.XXX.XXX.XXX
+	dns-nameservers XXX.XX.XX.XX
+	post-up ip route add XXX.XXX.0.0/16 dev ens3
+
+iface ens3 inet6 static
+	address XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX
+	netmask 64
+	dns-nameservers XXXX:XXXX:XXX:XXXX::X
+
+auto ens3:1
+iface ens3:1 inet static
+	address XXX.XXX.XXX.XXX
+	netmask 255.255.254.0
+```
+
+
+## 1. Installation
 To start the installation, login as `root` to your VPS and run the two commands listed below. Note that the masternode does not run as root but as a user that the script will create. The script, however, needs to run as root so your VPS can be configured correctly.
 
 ```
@@ -46,7 +82,7 @@ You are now ready to configure your local wallet and finish the masternode setup
  6. Wait for the transaction from step #5 to be fully confirmed. Look for a tick in the first column in your transactions tab
  7. Once confirmed, open your wallet console and type: `masternode outputs` **or use the generated private key from the script**
  8. Open your masternode configuration file from the wallets `Tools` menu item.
- 9. In your masternodes.conf file add an entry that looks like: `[address-name from #4] [ip:port of your VPS from script output] [privkey from script output] [txid from from #7] [tx output index from #7]` - 
+ 9. In your masternodes.conf file add an entry that looks like: `[address-name from #4] [ip:port of your VPS from script output] [privkey from script output] [txid from from #7] [tx output index from #7]` -
  10. Your masternodes.conf file entry should look like: `MN-1 127.0.0.2:8906 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0` and it must be all on one line in your masternodes config file
  11. Save and close your masternodes.conf file
  12. Close your wallet and restart
@@ -59,7 +95,7 @@ You are now ready to configure your local wallet and finish the masternode setup
  &nbsp;
 
 ## Multiple master nodes on one server
-The script allows for multiple nodes to be setup on the same server, using the same IP address and different ports. It also allows for either IPv4 and/or IPv6 addresses to be used. 
+The script allows for multiple nodes to be setup on the same server, using the same IP address and different ports. It also allows for either IPv4 and/or IPv6 addresses to be used.
 
 During the execution of the script you have the opportunity to decide on a port to use for the node. Each node runs under are different user account which the script creates for you.
 
@@ -94,12 +130,12 @@ You can query each of your masternodes by first switching to the user the master
  su - <username>
 ```
 
-If you are asked for a password, it is in the script output you received when you installed the masternode, you can right click and paste the password. 
+If you are asked for a password, it is in the script output you received when you installed the masternode, you can right click and paste the password.
 The following commands can then be run against the node that is running as the user you just switched to.
 
 #### To query your masternodes status
 ```
- moondex-cli masternode status 
+ moondex-cli masternode status
 ```
 
 #### To query your masternode information
@@ -146,7 +182,7 @@ Whilst effort has been put into maintaining and testing this script, it will aut
 
 
 
-r a server that has used this script to install 1 or more previous nodes. 
+r a server that has used this script to install 1 or more previous nodes.
 
 This script will work alongside masternodes that were installed by other means provided the masternode binaries `moondexd` and `moondex-cli` are installed to `/usr/local/bin`.
 
@@ -176,7 +212,7 @@ You are now ready to configure your local wallet and finish the masternode setup
  6. Wait for the transaction from step #5 to be fully confirmed. Look for a tick in the first column in your transactions tab
  7. Once confirmed, open your wallet console and type: `masternode outputs` **or use the generated private key from the script**
  8. Open your masternode configuration file from the wallets `Tools` menu item.
- 9. In your masternodes.conf file add an entry that looks like: `[address-name from #4] [ip:port of your VPS from script output] [privkey from script output] [txid from from #7] [tx output index from #7]` - 
+ 9. In your masternodes.conf file add an entry that looks like: `[address-name from #4] [ip:port of your VPS from script output] [privkey from script output] [txid from from #7] [tx output index from #7]` -
  10. Your masternodes.conf file entry should look like: `MN-1 127.0.0.2:8906 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0` and it must be all on one line in your masternodes config file
  11. Save and close your masternodes.conf file
  12. Close your wallet and restart
@@ -189,7 +225,7 @@ You are now ready to configure your local wallet and finish the masternode setup
  &nbsp;
 
 ## Multiple master nodes on one server
-The script allows for multiple nodes to be setup on the same server, using the same IP address and different ports. It also allows for either IPv4 and/or IPv6 addresses to be used. 
+The script allows for multiple nodes to be setup on the same server, using the same IP address and different ports. It also allows for either IPv4 and/or IPv6 addresses to be used.
 
 During the execution of the script you have the opportunity to decide on a port to use for the node. Each node runs under are different user account which the script creates for you.
 
@@ -224,12 +260,12 @@ You can query each of your masternodes by first switching to the user the master
  su - <username>
 ```
 
-If you are asked for a password, it is in the script output you received when you installed the masternode, you can right click and paste the password. 
+If you are asked for a password, it is in the script output you received when you installed the masternode, you can right click and paste the password.
 The following commands can then be run against the node that is running as the user you just switched to.
 
 #### To query your masternodes status
 ```
- moondex-cli masternode status 
+ moondex-cli masternode status
 ```
 
 #### To query your masternode information
