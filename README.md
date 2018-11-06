@@ -98,17 +98,20 @@ The script involves these steps requiring responses from you:
 After completing the above steps on the VPS, return to your local wallet (Windows, etc.)
 
 1. Confirm the local wallet is running and fully synced.
+1. Confirm that your collateral transaction has received a minimum of 15 confirmations.
 1. Confirm that the new MN is listed in the *My Masternodes* tab under the *Masternodes* section in your local wallet.  At this point, it's status will be something like **MISSING**.
 1. Make sure the VPS node is fully synchronized and at the correct block height before trying to activate it from the local wallet.  Do this using the command `/usr/local/bin/moondex-cli getinfo` or `/usr/local/bin/moondex-cli mnsync status`
 1. Click the row for the masternode you just added (select that masternode)
 1. Right click > *Start Alias* to start the masternode
 1. You should see the status switch from **MISSING** to **PRE-ENABLED**, and then (after 20ish minutes), to **ENABLED**.  Your node should now be running successfully.
-1. Performa a final confirmation check back on the VPS by running (under the user name for the masternode, not root) `/usr/local/bin/moondex-cli masternode status`.  Look for a message along the lines of *Masternode Successfully Started*.
+1. Performa a final confirmation check back on the VPS by running (under the user name for the masternode, not root) `/usr/local/bin/moondex-cli masternode status`.  Look for a message along the lines of *Masternode Successfully Started*.  If you see this, then it means the masternode is running properly.  This is the BEST way to confirm it is working (the GUI wallet status can sometimes be mis-reported).
 
  &nbsp;
 
 ## 5. Multiple master nodes on one server
-The script allows for multiple nodes to be setup on the same server, using different IP addresses and different rpcport values.  The script will automatically detect if your installation is the first on the VPS, or if it is a multiple-MN installation.  Generally, the overall installation process is the same for additional MDEX masternodes on the same VPS (Steps 1,3,4 above).
+The script allows for multiple nodes to be setup on the same server, using different IP addresses and different rpcport values.  The script will automatically detect if your installation is the first on the VPS, or if it is a multiple-MN installation.  
+
+Generally, the overall installation process is the same for additional MDEX masternodes on the same VPS (Steps 1,3,4 above).
 
 **If you do setup multiple masternodes on a single VPS, make sure the VPS hardware is capable of running more than one masternode or your masternode stability and rewards will suffer. You have been warned.**
 
