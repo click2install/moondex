@@ -1,11 +1,12 @@
 #!/bin/bash
 
-TMP_FOLDER=$(mktemp -d) 
+TMP_FOLDER=$(mktemp -d)
 
 DAEMON_ARCHIVE=${1:-"https://github.com/Moondex/MoonDEXCoin/releases/download/v2.0.1.1/linux-no-gui-v2.0.1.1.tar.gz"}
 SENTINEL_ARCHIVE=https://github.com/Moondex/moondex_sentinel/archive/master.zip
 ARCHIVE_STRIP=""
 DEFAULT_PORT=8906
+DEFAULT_RPCPORT=8960
 
 COIN_NAME="moondex"
 CONFIG_FILE="${COIN_NAME}.conf"
@@ -26,7 +27,10 @@ NC='\033[0m'
 
 export LC_ALL=C
 
-function checks() 
+
+#************************************************************************************************
+#************************************************************************************************
+function checks()
 {
   if [[ $(lsb_release -d) != *16.04* ]]; then
     echo -e " ${RED}You are not running Ubuntu 16.04. Installation is cancelled.${NC}"
@@ -46,12 +50,16 @@ function checks()
   fi
 }
 
-function prepare_system() 
+
+#************************************************************************************************
+# Perform updates, upgrades, and install dependencies
+#************************************************************************************************
+function prepare_system()
 {
   clear
   echo -e "Checking if swap space is required."
   local PHYMEM=$(free -g | awk '/^Mem:/{print $2}')
-  
+
   if [ "${PHYMEM}" -lt "2" ]; then
     local SWAP=$(swapon -s get 1 | awk '{print $1}')
     if [ -z "${SWAP}" ]; then
@@ -66,13 +74,13 @@ function prepare_system()
   else
     echo -e "${GREEN}Server running with at least 4G of RAM, no swap file needed.${NC}"
   fi
-  
+
   echo -e "${GREEN}Updating package manager.${NC}"
   apt update
-  
+
   echo -e "${GREEN}Upgrading existing packages, it may take some time to finish.${NC}"
-  DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y -qq upgrade 
-  
+  DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y -qq upgrade
+
   echo -e "${GREEN}Installing all dependencies for the ${COIN_NAME} coin master node, it may take some time to finish.${NC}"
   apt install -y software-properties-common
   apt-add-repository -y ppa:bitcoin/bitcoin
@@ -113,7 +121,11 @@ function prepare_system()
   clear
 }
 
-function deploy_binary() 
+
+#************************************************************************************************
+# Install the binaries if they are not already installed.
+#************************************************************************************************
+function deploy_binary()
 {
   if [ -f ${DAEMON_PATH} ]; then
     echo -e " ${GREEN}${COIN_NAME} daemon binary file already exists, using binary from ${DAEMON_PATH}.${NC}"
@@ -134,7 +146,236 @@ function deploy_binary()
   fi
 }
 
-function enable_firewall() 
+
+#************************************************************************************************
+# Ask for user name for the MN to be run under.  It will not run under root.
+#  Creates the user and password, which will be reported near the end of the script.
+#************************************************************************************************
+function ask_user()
+{
+  read -e -p "$(echo -e $YELLOW Enter a new username to run the ${COIN_NAME} service as: $NC)" -i ${DEFAULT_USER_NAME} USER_NAME
+
+  if [ -z "$(getent passwd ${USER_NAME})" ]; then
+    useradd -m ${USER_NAME}
+#    local USERPASS=$(pwgen -s 12 1)
+    USERPASS=$(pwgen -s 12 1)
+    echo "${USER_NAME}:${USERPASS}" | chpasswd
+
+    USER_HOME=$(sudo -H -u ${USER_NAME} bash -c 'echo ${HOME}')
+    HOME_FOLDER="${USER_HOME}/.${COIN_NAME}core"
+
+    mkdir -p ${HOME_FOLDER}
+    chown -R ${USER_NAME}: ${HOME_FOLDER} >/dev/null 2>&1
+  else
+    clear
+    echo -e "${RED}User already exists. Please enter another username.${NC}"
+    ask_user
+  fi
+}
+
+
+#************************************************************************************************
+# MDEX requires all MNs to use port 8906.
+# Below comment lines disable original code giving the user an option for the port.
+#************************************************************************************************
+function check_port()
+{
+  PORT=${DEFAULT_PORT}
+  echo -e "${YELLOW}Using Port ${PORT}.${NC}"
+#  declare -a PORTS
+
+#  PORTS=($(netstat -tnlp | awk '/LISTEN/ {print $4}' | awk -F":" '{print $NF}' | sort | uniq | tr '\r\n'  ' '))
+#  ask_port
+
+#  while [[ ${PORTS[@]} =~ ${PORT} ]] || [[ ${PORTS[@]} =~ $[PORT+1] ]]; do
+#    clear
+#    echo -e "${RED}Port in use, please choose another port:${NF}"
+#    ask_port
+#  done
+}
+
+
+#************************************************************************************************
+# Ask for port to use. This should not be changed from the default
+# All MNs on the VPS should use the same port (they will use different rpcport values though).
+#************************************************************************************************
+function ask_port()
+{
+  read -e -p "$(echo -e $YELLOW Enter a port to run the ${COIN_NAME} service on: $NC)" -i ${DEFAULT_PORT} PORT
+}
+
+
+#************************************************************************************************
+# Query user for the desired port number to use.  If it is already in use, ask for a different
+#  port.
+#************************************************************************************************
+function check_rpcport()
+{
+  declare -a PORTS
+
+  PORTS=($(netstat -tnlp | awk '/LISTEN/ {print $4}' | awk -F":" '{print $NF}' | sort | uniq | tr '\r\n'  ' '))
+  ask_rpcport
+
+  while [[ ${PORTS[@]} =~ ${RPCPORT} ]] || [[ ${PORTS[@]} =~ $[RPCPORT+1] ]]; do
+    clear
+    echo -e "${RED}Port in use, please choose another port:${NF}"
+    ask_rpcport
+  done
+}
+
+
+#************************************************************************************************
+# Ask for rpcport to use.
+# Should be different from port value, and should be unique for each MN on the VPS.
+# The default value for rpcport should work for the first MN, but should be incremented for any
+#  additional MNs on the VPS.
+#************************************************************************************************
+function ask_rpcport()
+{
+  echo
+  echo -e "${YELLOW}Recommended values for RPCPORT${NF}"
+  echo -e "${YELLOW}  1st MDEX Masternode on VPS: 8960${NF}"
+  echo -e "${YELLOW}  2nd MDEX Masternode on VPS: 8961${NF}"
+  echo -e "${YELLOW}  3rd MDEX Masternode on VPS: 8962${NF}"
+  read -e -p "$(echo -e $YELLOW Enter an rpcport to run the ${COIN_NAME} service on: $NC)" -i ${DEFAULT_RPCPORT} RPCPORT
+}
+
+
+#************************************************************************************************
+# Query the available IP addresses on the machine.  Note that while it will idenitfy IPv6
+#  addresses, and a MN with an IPv6 address will sync, we have thus far been unable to get
+#  IPv6 to work on the local wallet side.  Therefore, IPv6 is not recommended at present.
+#************************************************************************************************
+function ask_ip()
+{
+  declare -a NODE_IPS
+  declare -a NODE_IPS_STR
+
+  for ips in $(netstat -i | awk '!/Kernel|Iface|lo/ {print $1," "}')
+  do
+    ipv4=$(curl --interface ${ips} --connect-timeout 2 -s4 icanhazip.com)
+    NODE_IPS+=(${ipv4})
+    NODE_IPS_STR+=("$(echo -e [IPv4] ${ipv4})")
+
+    ipv6=$(curl --interface ${ips} --connect-timeout 2 -s6 icanhazip.com)
+    NODE_IPS+=(${ipv6})
+    NODE_IPS_STR+=("$(echo -e [IPv6] ${ipv6})")
+  done
+
+  echo
+  if [ ${#NODE_IPS[@]} -gt 1 ]
+    then
+      echo -e " ${GREEN}More than one IP address found.${NC}"
+      INDEX=0
+      for ip in "${NODE_IPS_STR[@]}"
+      do
+        echo -e " [${INDEX}] ${ip}"
+        let INDEX=${INDEX}+1
+      done
+      echo -e " ${YELLOW}Which IP address do you want to use?${NC}"
+      echo -e " ${YELLOW}(Note that Masternodes using IPv6 addresses may not function properly at present.)${NC}"
+      read -e choose_ip
+      NODEIP=${NODE_IPS[$choose_ip]}
+  else
+    NODEIP=${NODE_IPS[0]}
+  fi
+}
+
+
+#************************************************************************************************
+# Assign genkey, creating one if necessary
+#************************************************************************************************
+function create_key()
+{
+  read -e -p "$(echo -e ${YELLOW} Paste your masternode private key and press ENTER or leave it blank to generate a new private key using genkey.$NC)" PRIVKEY
+
+  if [[ -z "${PRIVKEY}" ]]; then
+    get_key
+  fi
+}
+
+
+#************************************************************************************************
+# Generate a new private key
+#************************************************************************************************
+function get_key()
+{
+  sudo -u ${USER_NAME} ${DAEMON_PATH} -datadir=${HOME_FOLDER} -conf=${HOME_FOLDER}/${CONFIG_FILE} -daemon >/dev/null 2>&1
+  sleep 5
+
+  if [ -z "$(pidof ${DAEMON_FILE})" ]; then
+    echo -e "${RED}${COIN_NAME} deamon couldn't start, could not generate a private key. Check /var/log/syslog for errors.${NC}"
+    exit 1
+  fi
+
+  local privkey=$(sudo -u ${USER_NAME} ${CLI_PATH} -datadir=${HOME_FOLDER} -conf=${HOME_FOLDER}/${CONFIG_FILE} masternode genkey 2>&1)
+  if [[ -z "${privkey}" ]] || [[ "${privkey^^}" = *"ERROR"* ]];
+  then
+    local retry=5
+    echo -e "${GREEN} - Unable to request private key, node not ready, retrying in ${retry} seconds ...${NC}"
+    sleep ${retry}
+
+    get_key
+  else
+    echo -e "${GREEN} - Privkey successfully generated${NC}"
+    PRIVKEY=${privkey}
+
+    sudo -u ${USER_NAME} ${CLI_PATH} -datadir=${HOME_FOLDER} -conf=${HOME_FOLDER}/${CONFIG_FILE} stop >/dev/null 2>&1
+    sleep 5
+  fi
+}
+
+
+#************************************************************************************************
+# Create the configuration file (also see update_config)
+#************************************************************************************************
+function create_config()
+{
+  RPCUSER=$(pwgen -s 8 1)
+  RPCPASSWORD=$(pwgen -s 15 1)
+  cat << EOF > ${HOME_FOLDER}/${CONFIG_FILE}
+rpcuser=${RPCUSER}
+rpcpassword=${RPCPASSWORD}
+rpcallowip=127.0.0.1
+port=${PORT}
+rpcport=${RPCPORT}
+listen=1
+server=1
+daemon=1
+staking=1
+
+EOF
+}
+
+
+#************************************************************************************************
+# Add more information to the configuration file (also see create_config)
+#************************************************************************************************
+function update_config()
+{
+  cat << EOF >> ${HOME_FOLDER}/${CONFIG_FILE}
+logtimestamps=1
+maxconnections=256
+masternode=1
+
+externalip=${NODEIP}
+bind=${NODEIP}
+masternodeprivkey=${PRIVKEY}
+
+addnode=45.32.140.21
+addnode=104.18.51.247
+addnode=149.28.251.54
+addnode=149.28.106.146
+addnode=104.238.162.199
+EOF
+  chown ${USER_NAME}: ${HOME_FOLDER}/${CONFIG_FILE} >/dev/null
+}
+
+
+#************************************************************************************************
+# set up firewall
+#************************************************************************************************
+function enable_firewall()
 {
   echo -e " ${GREEN}Installing fail2ban and setting up firewall to allow access on port ${PORT}.${NC}"
 
@@ -145,7 +386,7 @@ function enable_firewall()
 
   ufw allow 22/tcp comment "SSH port" >/dev/null 2>&1
   ufw limit 22/tcp >/dev/null 2>&1
-  
+
   ufw logging on >/dev/null 2>&1
   ufw default deny incoming >/dev/null 2>&1
   ufw default allow outgoing >/dev/null 2>&1
@@ -155,55 +396,14 @@ function enable_firewall()
   systemctl start fail2ban >/dev/null 2>&1
 }
 
-function add_daemon_service() 
-{
-  cat << EOF > /etc/systemd/system/${USER_NAME}.service
-[Unit]
-Description=${COIN_NAME} masternode daemon service
-After=network.target
-After=syslog.target
-[Service]
-Type=forking
-User=${USER_NAME}
-Group=${USER_NAME}
-WorkingDirectory=${HOME_FOLDER}
-ExecStart=${DAEMON_PATH} -datadir=${HOME_FOLDER} -conf=${HOME_FOLDER}/$CONFIG_FILE -daemon 
-ExecStop=${CLI_PATH} stop
-Restart=always
-RestartSec=3
-PrivateTmp=true
-TimeoutStopSec=60s
-TimeoutStartSec=10s
-StartLimitInterval=120s
-StartLimitBurst=5
-  
-[Install]
-WantedBy=multi-user.target
-EOF
 
-  systemctl daemon-reload
-  sleep 3
-
-  echo -e " ${GREEN}Starting the ${COIN_NAME} service from ${DAEMON_PATH} on port ${PORT}.${NC}"
-  systemctl start ${USER_NAME}.service >/dev/null 2>&1
-  
-  echo -e " ${GREEN}Enabling the service to start on reboot.${NC}"
-  systemctl enable ${USER_NAME}.service >/dev/null 2>&1
-
-  if [[ -z $(pidof $DAEMON_FILE) ]]; then
-    echo -e "${RED}The ${COIN_NAME} masternode service is not running${NC}. You should start by running the following commands as root:"
-    echo "systemctl start ${USER_NAME}.service"
-    echo "systemctl status ${USER_NAME}.service"
-    echo "less /var/log/syslog"
-    exit 1
-  fi
-}
-
+#************************************************************************************************
+#************************************************************************************************
 function deploy_sentinel()
 {
   echo -e "${GREEN} Deploying sentinel.${NC}"
-  
-  local tmp_folder=$(mktemp -d) 
+
+  local tmp_folder=$(mktemp -d)
   cd ${tmp_folder}
 
   wget ${SENTINEL_ARCHIVE} -O sentinel.zip
@@ -220,160 +420,68 @@ function deploy_sentinel()
 
   echo -e "${GREEN} Creating sentinel schedule${NC}"
   crontab -l > tempcron
-    
+
   echo "* * * * * cd ${USER_HOME}/.sentinel && ./venv/bin/python bin/sentinel.py >/dev/null 2>&1" >> tempcron
   crontab tempcron
   rm tempcron
 
-  SENTINEL_DEBUG=1 
+  SENTINEL_DEBUG=1
 
   rm -rf ${tmp_folder}
   echo -e "${GREEN} Sentinel Installed${NC}"
 }
 
-function ask_port() 
+
+#************************************************************************************************
+# Configure and start the MN daemon
+#************************************************************************************************
+function add_daemon_service()
 {
-  read -e -p "$(echo -e $YELLOW Enter a port to run the ${COIN_NAME} service on: $NC)" -i ${DEFAULT_PORT} PORT
-}
+  cat << EOF > /etc/systemd/system/${USER_NAME}.service
+[Unit]
+Description=${COIN_NAME} masternode daemon service
+After=network.target
+After=syslog.target
+[Service]
+Type=forking
+User=${USER_NAME}
+Group=${USER_NAME}
+WorkingDirectory=${HOME_FOLDER}
+ExecStart=${DAEMON_PATH} -datadir=${HOME_FOLDER} -conf=${HOME_FOLDER}/$CONFIG_FILE -daemon
+ExecStop=${CLI_PATH} stop
+Restart=always
+RestartSec=3
+PrivateTmp=true
+TimeoutStopSec=60s
+TimeoutStartSec=10s
+StartLimitInterval=120s
+StartLimitBurst=5
 
-function ask_user() 
-{  
-  read -e -p "$(echo -e $YELLOW Enter a new username to run the ${COIN_NAME} service as: $NC)" -i ${DEFAULT_USER_NAME} USER_NAME
-
-  if [ -z "$(getent passwd ${USER_NAME})" ]; then
-    useradd -m ${USER_NAME}
-    local USERPASS=$(pwgen -s 12 1)
-    echo "${USER_NAME}:${USERPASS}" | chpasswd
-
-    USER_HOME=$(sudo -H -u ${USER_NAME} bash -c 'echo ${HOME}')
-    HOME_FOLDER="${USER_HOME}/.${COIN_NAME}core"
-        
-    mkdir -p ${HOME_FOLDER}
-    chown -R ${USER_NAME}: ${HOME_FOLDER} >/dev/null 2>&1
-  else
-    clear
-    echo -e "${RED}User already exists. Please enter another username.${NC}"
-    ask_user
-  fi
-}
-
-function check_port() 
-{
-  declare -a PORTS
-
-  PORTS=($(netstat -tnlp | awk '/LISTEN/ {print $4}' | awk -F":" '{print $NF}' | sort | uniq | tr '\r\n'  ' '))
-  ask_port
-
-  while [[ ${PORTS[@]} =~ ${PORT} ]] || [[ ${PORTS[@]} =~ $[PORT+1] ]]; do
-    clear
-    echo -e "${RED}Port in use, please choose another port:${NF}"
-    ask_port
-  done
-}
-
-function ask_ip() 
-{
-  declare -a NODE_IPS
-  declare -a NODE_IPS_STR
-
-  for ips in $(netstat -i | awk '!/Kernel|Iface|lo/ {print $1," "}')
-  do
-    ipv4=$(curl --interface ${ips} --connect-timeout 2 -s4 icanhazip.com)
-    NODE_IPS+=(${ipv4})
-    NODE_IPS_STR+=("$(echo -e [IPv4] ${ipv4})")
-
-    ipv6=$(curl --interface ${ips} --connect-timeout 2 -s6 icanhazip.com)
-    NODE_IPS+=(${ipv6})
-    NODE_IPS_STR+=("$(echo -e [IPv6] ${ipv6})")
-  done
-
-  if [ ${#NODE_IPS[@]} -gt 1 ]
-    then
-      echo -e " ${GREEN}More than one IP address found.${NC}"
-      INDEX=0
-      for ip in "${NODE_IPS_STR[@]}"
-      do
-        echo -e " [${INDEX}] ${ip}"
-        let INDEX=${INDEX}+1
-      done
-      echo -e " ${YELLOW}Which IP address do you want to use?${NC}"
-      read -e choose_ip
-      NODEIP=${NODE_IPS[$choose_ip]}
-  else
-    NODEIP=${NODE_IPS[0]}
-  fi
-}
-
-function create_config() 
-{
-  RPCUSER=$(pwgen -s 8 1)
-  RPCPASSWORD=$(pwgen -s 15 1)
-  cat << EOF > ${HOME_FOLDER}/${CONFIG_FILE}
-rpcuser=${RPCUSER}
-rpcpassword=${RPCPASSWORD}
-rpcallowip=127.0.0.1
-rpcport=$[PORT+1]
-listen=1
-server=1
-daemon=1
-staking=1
-port=${PORT}
-addnode=45.32.140.21
-addnode=104.18.51.247
-addnode=149.28.251.54
-addnode=149.28.106.146
-addnode=104.238.162.199
+[Install]
+WantedBy=multi-user.target
 EOF
-}
 
-function get_key()
-{
-  sudo -u ${USER_NAME} ${DAEMON_PATH} -datadir=${HOME_FOLDER} -conf=${HOME_FOLDER}/${CONFIG_FILE} -daemon >/dev/null 2>&1
-  sleep 5
+  systemctl daemon-reload
+  sleep 3
 
-  if [ -z "$(pidof ${DAEMON_FILE})" ]; then
-    echo -e "${RED}${COIN_NAME} deamon couldn't start, could not generate a private key. Check /var/log/syslog for errors.${NC}"
+  echo -e " ${GREEN}Starting the ${COIN_NAME} service from ${DAEMON_PATH} on port ${PORT}.${NC}"
+  systemctl start ${USER_NAME}.service >/dev/null 2>&1
+
+  echo -e " ${GREEN}Enabling the service to start on reboot.${NC}"
+  systemctl enable ${USER_NAME}.service >/dev/null 2>&1
+
+  if [[ -z $(pidof $DAEMON_FILE) ]]; then
+    echo -e "${RED}The ${COIN_NAME} masternode service is not running${NC}. You should start by running the following commands as root:"
+    echo "systemctl start ${USER_NAME}.service"
+    echo "systemctl status ${USER_NAME}.service"
+    echo "less /var/log/syslog"
     exit 1
   fi
-
-  local privkey=$(sudo -u ${USER_NAME} ${CLI_PATH} -datadir=${HOME_FOLDER} -conf=${HOME_FOLDER}/${CONFIG_FILE} masternode genkey 2>&1)
-  if [[ -z "${privkey}" ]] || [[ "${privkey^^}" = *"ERROR"* ]]; 
-  then
-    local retry=5
-    echo -e "${GREEN} - Unable to request private key, node not ready, retrying in ${retry} seconds ...${NC}"
-    sleep ${retry}
-
-    get_key
-  else
-    echo -e "${GREEN} - Privkey successfully generated${NC}"
-    PRIVKEY=${privkey}
-
-    sudo -u ${USER_NAME} ${CLI_PATH} -datadir=${HOME_FOLDER} -conf=${HOME_FOLDER}/${CONFIG_FILE} stop >/dev/null 2>&1
-    sleep 5
-  fi
 }
 
-function create_key() 
-{
-  read -e -p "$(echo -e $YELLOW Paste your masternode private key and press ENTER or leave it blank to generate a new private key.$NC)" PRIVKEY
 
-  if [[ -z "${PRIVKEY}" ]]; then
-    get_key
-  fi
-}
-
-function update_config() 
-{  
-  cat << EOF >> ${HOME_FOLDER}/${CONFIG_FILE}
-logtimestamps=1
-maxconnections=256
-masternode=1
-externalip=${NODEIP}
-masternodeprivkey=${PRIVKEY}
-EOF
-  chown ${USER_NAME}: ${HOME_FOLDER}/${CONFIG_FILE} >/dev/null
-}
-
+#************************************************************************************************
+#************************************************************************************************
 function add_log_truncate()
 {
   LOG_FILE="${HOME_FOLDER}/debug.log";
@@ -393,16 +501,21 @@ EOF
   fi
 }
 
-function show_output() 
+
+#************************************************************************************************
+# After installation and start, report configuration information to user.
+#************************************************************************************************
+function show_output()
 {
  echo
  echo -e "================================================================================================================================"
  echo -e "${GREEN}"
  echo -e "                                                 ${COIN_NAME} installation completed${NC}"
  echo
- echo -e " Your ${COIN_NAME} coin master node is up and running." 
+ echo -e " Your ${COIN_NAME} coin master node is up and running."
  echo -e "  - it is running as the ${GREEN}${USER_NAME}${NC} user, listening on port ${GREEN}${PORT}${NC} at your VPS address ${GREEN}${NODEIP}${NC}."
  echo -e "  - the ${GREEN}${USER_NAME}${NC} password is ${GREEN}${USERPASS}${NC}"
+ echo -e "  - the ${GREEN}RPCPORT${NC} is ${GREEN}${RPCPORT}${NC}"
  echo -e "  - the ${COIN_NAME} configuration file is located at ${GREEN}${HOME_FOLDER}/${CONFIG_FILE}${NC}"
  echo -e "  - the masternode privkey is ${GREEN}${PRIVKEY}${NC}"
  echo
@@ -415,38 +528,50 @@ function show_output()
  echo -e "  - auto start when your VPS is rebooted."
  echo -e "  - rotate your ${GREEN}${LOG_FILE}${NC} file once per week and keep the last 4 weeks of logs."
  echo
- echo -e " You can find the masternode status when logged in as ${USER_NAME} using the command below:"
- echo -e "  - ${GREEN}${CLI_FILE} getinfo${NC} to retreive your nodes status and information"
+ echo -e " Log in as ${GREEN}${USER_NAME}${NC} using ${YELLOW}su ${USER_NAME}${NC} so that you can get information on your Masternode using the below commands:"
+ echo -e "  - ${GREEN}${CLI_FILE} getinfo${NC} to retreive your node's status and information"
+ echo -e "  - ${GREEN}${CLI_FILE} mnsync status${NC} to retreive a sync status summary"
+ echo -e "  - ${GREEN}${CLI_FILE} masternode status${NC} to retreive a masternode status summary"
  echo
- echo -e "   if you are not logged in as ${GREEN}${USER_NAME}${NC} then you can run ${YELLOW}su - ${USER_NAME}${NC} to switch to that user before"
- echo -e "   running the ${GREEN}${CLI_FILE} getinfo${NC} command."
+ #echo -e "   running the ${GREEN}${CLI_FILE} getinfo${NC} command."
  echo -e "   NOTE: the ${DAEMON_FILE} daemon must be running first before trying this command. See notes above on service commands usage."
  echo
- echo -e " Make sure you keep the information above somewhere private and secure so you can refer back to it." 
- echo -e "${YELLOW} NEVER SHARE YOUR PRIVKEY WITH ANYONE, IF SOMEONE OBTAINS IT THEY CAN STEAL ALL YOUR COINS.${NC}"
+ echo -e " Make sure you keep the information above somewhere private and secure so you can refer back to it."
+ echo -e "${RED} NEVER SHARE YOUR PRIVKEY WITH ANYONE, IF SOMEONE OBTAINS IT THEY CAN STEAL ALL YOUR COINS.${NC}"
  echo
  echo -e "================================================================================================================================"
  echo
  echo
 }
 
+
+#************************************************************************************************
+# As the last action of the script, ask if user wants to monitor the syncing process
+#  Otherwise it will just exit.
+#************************************************************************************************
 function ask_watch()
-{  
-  read -e -p " $(echo -e ${YELLOW}Do you want to watch the ${COIN_NAME} daemon status whilst it is synchronizing? [Y/N]${NC})" WATCH_CHOICE
-  
+{
+  read -e -p " $(echo -e ${YELLOW}OPTIONAL: Do you want to watch the ${COIN_NAME} daemon status whilst it is synchronizing? Use Ctrl+C to exit. [Y/N]${NC})" WATCH_CHOICE
+#  read -e -p " $(printf ${YELLOW}OPTIONAL: Do you want to watch the ${COIN_NAME} daemon status whilst it is synchronizing? Use Ctrl+C to exit. [Y/N]${NC})" WATCH_CHOICE
+
   if [[ ("${WATCH_CHOICE}" == "y" || "${WATCH_CHOICE}" == "Y") ]]; then
-    local cmd=$(echo "${CLI_PATH} -datadir=${HOME_FOLDER} -conf=${HOME_FOLDER}/${CONFIG_FILE} getinfo && ${CLI_PATH} -datadir=${HOME_FOLDER} -conf=${HOME_FOLDER}/${CONFIG_FILE} masternode status")
+    local cmd=$(echo "${CLI_PATH} -datadir=${HOME_FOLDER} -conf=${HOME_FOLDER}/${CONFIG_FILE} getinfo && ${CLI_PATH} -datadir=${HOME_FOLDER} -conf=${HOME_FOLDER}/${CONFIG_FILE} mnsync status && ${CLI_PATH} -datadir=${HOME_FOLDER} -conf=${HOME_FOLDER}/${CONFIG_FILE} masternode status")
     watch -n 5 ${cmd}
-  fi  
+  fi
 }
 
-function setup_node() 
+
+#************************************************************************************************
+# Steps for configuring the Masternode and launching it
+#************************************************************************************************
+function setup_node()
 {
   ask_user
   check_port
+  check_rpcport
   ask_ip
-  create_config
   create_key
+  create_config
   update_config
   enable_firewall
   deploy_sentinel
@@ -464,11 +589,12 @@ echo -e "=======================================================================
 echo
 echo -e "                                    8b    d8 8888b.  888888 Yb  dP"
 echo -e "                                    88b  d88 8I   Yb 88__    YbdP"
-echo -e "                                    88YbdP88 8I   dY 88\"\"    dPYb"  
-echo -e "                                    88 YY 88 8888Y\"  888888 dP  Yb" 
+echo -e "                                    88YbdP88 8I   dY 88\"\"    dPYb"
+echo -e "                                    88 YY 88 8888Y\"  888888 dP  Yb"
 echo
-echo                          
+echo
 echo -e "${NC}"
+echo -e " Install script version 1.0"
 echo -e " This script will automate the installation of your ${COIN_NAME} coin masternode and server configuration by"
 echo -e " performing the following steps:"
 echo
@@ -485,13 +611,13 @@ echo
 echo -e " The files will be downloaded and installed from:"
 echo -e " ${GREEN}${DAEMON_ARCHIVE}${NC}"
 echo
-echo -e " Script created by click2install"
+echo -e " Script created by click2install.  Additional tweaks by Bitmucker."
 echo -e "  - GitHub: https://github.com/click2install"
 echo -e "  - Discord: click2install#9625"
 echo -e "  - ${COIN_NAME}: ${DONATION_ADDRESS}"
 echo -e "  - BTC: 1DJdhFp6CiVZSBSsXcecp1FnuHXDcsYQPu"
 echo -e "${GREEN}"
-echo -e "============================================================================================================="              
+echo -e "============================================================================================================="
 echo -e "${NC}"
 read -e -p "$(echo -e ${YELLOW} Do you want to continue? [Y/N] ${NC})" CHOICE
 
