@@ -84,80 +84,67 @@ This script is intended to be used on a clean server, or a server that has used 
 This script will install the masternode binaries (executable files) `moondexd` and `moondex-cli` into the common directory `/usr/local/bin`.
 
 The script involves these steps requiring responses from you:
-1. **New Installation:** If this is detected as the first MDEX masternode on the vps, it will proceed as normal.  If it detects another MDEX masternode, it will ask you if you wish to proceed or abort.
-1. **IP Address:** The script will identify any available IP addresses on the VPS.  Select the address you wish to use.  Do **not** select an address that is already in use by another MDEX masternode.  Also, at present, MDEX does not support IPv6 addresses.
-1. **Masternode Key:** Either paste a desired masternode key, or press <Enter> to have the script generate one for you.  It will be reported to you at the end so you can copy it into your records.
+1. **New Installation:** If this is detected as the first MDEX masternode on the vps, it will proceed as normal.  If it detects another pre-existing MDEX masternode, it will ask you if you wish to proceed or abort.
+1. **IP Address:** The script will identify all available IP addresses on the VPS.  Select the address you wish to use.  Do **not** select an address that is already in use by another MDEX masternode.  Also, at present, MDEX does not support IPv6 addresses.
+1. **Masternode Key:** Either paste a desired masternode key, or press *Enter* to have the script generate one for you.  It will be reported to you at the end so you can copy it into your records.
 1. **User Name:** Provide a user name. This is the user that the masternode will be installed and run under (again, this is NOT the root user).
-1. **RPCPORT:** Provide a value for the RPCPORT setting (recommended values are provided in the script)
-1. **Monitor syncing:** You can (optionally) monitor the progress of the syncing and status of the MN when prompted.  When you are done syncing (or just tired of watching), you can press Ctrl+c to return back to the installation script screen.
-1. **Record the configuration information:** provided at the end of the installation.
+1. **RPCPORT:** Provide a value for the RPCPORT setting (recommended values are provided in the script).  Each MDEX masternode on the VPS should use a *different* rpcport value.
+1. **Monitor syncing:** You can (optionally) monitor the progress of the syncing and status of the MN when prompted.  When you are done syncing (or just tired of watching), you can press **Ctrl+c** to return back to the installation script screen.
+1. **Record the configuration information:** As the final step of the installation, the script will provide a range of configuration information that you should copy for your records (addresses, private key, passwords, etc.).
 
 
 ## 4. Start your Masternode from your local wallet (GUI wallet)
 After completing the above steps on the VPS, return to your local wallet (Windows, etc.)
 
-1. Confirm the local wallet is fully synced.
+1. Confirm the local wallet is running and fully synced.
 1. Confirm that the new MN is listed in the *My Masternodes* tab under the *Masternodes* section in your local wallet.  At this point, it's status will be something like **MISSING**.
-1. Make sure the VPS node is fully synchronised and at the correct block height before trying to activate it from the wallet.
+1. Make sure the VPS node is fully synchronized and at the correct block height before trying to activate it from the local wallet.  Do this using the command `/usr/local/bin/moondex-cli getinfo` or `/usr/local/bin/moondex-cli mnsync status`
 1. Click the row for the masternode you just added (select that masternode)
 1. Right click > *Start Alias* to start the masternode
 1. You should see the status switch from **MISSING** to **PRE-ENABLED**, and then (after 20ish minutes), to **ENABLED**.  Your node should now be running successfully.
-1. Performa a final confirmation check back on the VPS by running (under the user name for the masternode, not root) ```/usr/local/bin/moondex-cli masternode status```.  Look for a message along the lines of *Masternode Successfully Started*.
+1. Performa a final confirmation check back on the VPS by running (under the user name for the masternode, not root) `/usr/local/bin/moondex-cli masternode status`.  Look for a message along the lines of *Masternode Successfully Started*.
 
  &nbsp;
 
 ## 5. Multiple master nodes on one server
-The script allows for multiple nodes to be setup on the same server, using the same IP address and different ports. It also allows for either IPv4 and/or IPv6 addresses to be used.
+The script allows for multiple nodes to be setup on the same server, using different IP addresses and different rpcport values.  The script will automatically detect if your installation is the first on the VPS, or if it is a multiple-MN installation.  Generally, the overall installation process is the same for additional MDEX masternodes on the same VPS (Steps 1,3,4 above).
 
-During the execution of the script you have the opportunity to decide on a port to use for the node. Each node runs under are different user account which the script creates for you.
+**If you do setup multiple masternodes on a single VPS, make sure the VPS hardware is capable of running more than one masternode or your masternode stability and rewards will suffer. You have been warned.**
 
-**Important:** when installing more than one masternode, make sure the port number you choose is above 1024 and at least 2 greater than any other node you have running. It needs to be 2 as the masternode uses the port you enter and the masternode rpcserver uses the next highest port.
+Each node runs under a different user account which the script creates for you.
 
-The easiest ports to choose would be 8906 for your first masternode, then 8908, 8910. The RPC port will be chosen based on your port selection.
+During the execution of the script you have the opportunity to decide on the *IP address* (if the VPS has more than one) and the value of *rpcport* to use for each node. Each MDEX masternode should use its own IP address, and the script will provide some guidance for the choice of *rpcport* value.
 
-At this stage the script auto detects the IP addresses of the server, if there is more than one address found, it will ask you which address to use, otherwise it will use the only address found without user input.
-
-If you do setup multiple masternodes on a single VPS, make sure the VPS is capable of running more than one masternode or your masternode rewards will suffer. **You have been warned.**
-
-Once you have setup the 2nd or more masternodes, use the output of the script for each masternode and follow the [steps above](https://github.com/click2install/moondex#how-to-setup-your-masternode-with-this-script-and-a-cold-wallet-on-your-pc) in your wallet, where each new masternode is a new line in your `masternode.conf` file. **NOTE:** All the port numbers in your masternode.conf file will be 8906 or the wallet will not re-start after you save the config file.
-
-Note that multiple masternodes use only one instance of the `moondexd` and `moondex-cli` binary files located in `/usr/local/bin` and they each have their own configuration located in `/home/<username>/.moondexcore` folder.
-
-&nbsp;
-
-
-## Running the script
-When you run the script it will tell you what it will do on your system. Once completed there is a summary of the information you need to be aware of regarding your node setup which you can copy/paste to your local PC. **Make sure you keep this information safe for later.**
-
-If you want to run the script before setting up the node in your cold wallet the script will generate a priv key for you to use, otherwise you can supply the privkey during the script execution by pasting it into the SSH shel [right click for paste] when asked.
+Note that multiple masternodes use only one instance of the executable `moondexd` and `moondex-cli` binary files located in `/usr/local/bin` and they each have their own configuration located in `/home/<username>/.moondexcore` folder.
 
 &nbsp;
 
 
 ## Masternode commands
-Because the masternode runs under a user account, you cannot login as root to your server and run `moondex-cli masternode status` (or other commands the "usual way"), if you do you will get an error. You need to switch the to the user that you installed the masternode under when running the script. **So make sure you keep the output of the script after it runs.**
+Because the masternode runs under a user account (not *root*), you cannot login as root to your server and run `moondex-cli masternode status` in the "usual way".  If you do, you will get an error. You need to switch the to the user that you installed the masternode under when running the script.
 
-You can query each of your masternodes by first switching to the user the masternode is running as:
+You can query each of your masternodes by first switching to the user the masternode is running under:
 ```
  su - <username>
 ```
 
-If you are asked for a password, it is in the script output you received when you installed the masternode, you can right click and paste the password.
-The following commands can then be run against the node that is running as the user you just switched to.
+If you are asked for a password (generally, it won't ask though), it is in the script output you received when you installed the masternode.
 
-#### To query your masternodes status
-```
- moondex-cli masternode status
-```
+The following commands can then be run under the user you just switched to.
 
-#### To query your masternode information
+#### To query your masternode information:
 ```
  moondex-cli getinfo
 ```
 
-#### To query your masternodes sync status
+#### To query your masternodes sync status:
 ```
  moondex-cli mnsync status
+```
+
+#### To query your masternodes status:
+```
+ moondex-cli masternode status
 ```
 
 ## Removing a masternode and user account
@@ -167,135 +154,10 @@ If something goes wrong with your installation or you want to remove a masternod
 ```
 This will remove the user and its home directory. If you then re-run the installation script you can re-use that username.
 
-&nbsp;
-
-## Security
-The script will set up the required firewall rules to only allow inbound node communications, whilst blocking all other inbound ports and all outbound ports.
-
-The [fail2ban](https://www.fail2ban.org/wiki/index.php/Main_Page) package is also used to mitigate DDoS attempts on your server.
-
-Despite this script needing to run as `root` you should secure your Ubuntu server as normal with the following precautions:
-
- - disable password authentication
- - disable root login
- - enable SSH certificate login only
-
-If the above precautions are taken you will need to `su root` before running the script. You can find a good tutorial for securing your VPS [here](https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-16-04).
-
-&nbsp;
-
-## Disclaimer
-Whilst effort has been put into maintaining and testing this script, it will automatically modify settings on your Ubuntu server - use at your own risk. By downloading this script you are accepting all responsibility for any actions it performs on your server.
-
-&nbsp;
-
-
-
-
-
-
-r a server that has used this script to install 1 or more previous nodes.
-
-This script will work alongside masternodes that were installed by other means provided the masternode binaries `moondexd` and `moondex-cli` are installed to `/usr/local/bin`.
-
-Donations for the creation and maintenance of this script are welcome at:
-&nbsp;
-
-MDEX: XoDpG5yrZ3UTtAywge5wNZAbhmxJi7SZbh
-
-BTC: 1DJdhFp6CiVZSBSsXcecp1FnuHXDcsYQPu
-
-&nbsp;
-
-## How to setup your masternode with this script and a cold wallet on your PC
-The script assumes you are running a cold wallet on your local PC and this script will execute on a Ubuntu Linux VPS (server). The steps involved are:
-
- 1. Run the masternode installation script as per the [instructions above](https://github.com/click2install/moondex#installation).
- 2. When you are finished this process you will get some information on what has been done as well as some important information you will need for your cold wallet setup.
- 3. **Copy/paste the output of this script into a text file and keep it safe.**
-
-You are now ready to configure your local wallet and finish the masternode setup
-
- 1. Make sure you have downloaded the latest wallet from https://github.com/Moondex/MoonDEXCoin/releases
- 2. Install the wallet on your local PC
- 3. Start the wallet and let if completely synchronize to the network - this will take some time
- 4. Create a new `Receiving Address` from the wallets `File` menu and name it appropriately, e.g. MN-1
- 5. Unlock your wallet and send **exactly 2,500 MDEX** to the address created in step #4
- 6. Wait for the transaction from step #5 to be fully confirmed. Look for a tick in the first column in your transactions tab
- 7. Once confirmed, open your wallet console and type: `masternode outputs` **or use the generated private key from the script**
- 8. Open your masternode configuration file from the wallets `Tools` menu item.
- 9. In your masternodes.conf file add an entry that looks like: `[address-name from #4] [ip:port of your VPS from script output] [privkey from script output] [txid from from #7] [tx output index from #7]` -
- 10. Your masternodes.conf file entry should look like: `MN-1 127.0.0.2:8906 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0` and it must be all on one line in your masternodes config file
- 11. Save and close your masternodes.conf file
- 12. Close your wallet and restart
- 13. Go to Masternodes > My MasterNodes
- 14. Make sure the VPS node is fully synchronised and at the correct block height before trying to activate it from the wallet.
- 15. Click the row for the masternode you just added
- 16. Right click > Start Alias
- 17. Your node should now be running successfully, wait for some time for it to connect with the network and the `Active` time to start counting up.
-
- &nbsp;
-
-## Multiple master nodes on one server
-The script allows for multiple nodes to be setup on the same server, using the same IP address and different ports. It also allows for either IPv4 and/or IPv6 addresses to be used.
-
-During the execution of the script you have the opportunity to decide on a port to use for the node. Each node runs under are different user account which the script creates for you.
-
-**Important:** when installing more than one masternode, make sure the port number you choose is above 1024 and at least 2 greater than any other node you have running. It needs to be 2 as the masternode uses the port you enter and the masternode rpcserver uses the next highest port.
-
-The easiest ports to choose would be 8906 for your first masternode, then 8908, 8910. The RPC port will be chosen based on your port selection.
-
-At this stage the script auto detects the IP addresses of the server, if there is more than one address found, it will ask you which address to use, otherwise it will use the only address found without user input.
-
-If you do setup multiple masternodes on a single VPS, make sure the VPS is capable of running more than one masternode or your masternode rewards will suffer. **You have been warned.**
-
-Once you have setup the 2nd or more masternodes, use the output of the script for each masternode and follow the [steps above](https://github.com/click2install/moondex#how-to-setup-your-masternode-with-this-script-and-a-cold-wallet-on-your-pc) in your wallet, where each new masternode is a new line in your `masternode.conf` file. **NOTE:** All the port numbers in your masternode.conf file will be 8906 or the wallet will not re-start after you save the config file.
-
-Note that multiple masternodes use only one instance of the `moondexd` and `moondex-cli` binary files located in `/usr/local/bin` and they each have their own configuration located in `/home/<username>/.moondexcore` folder.
-
-&nbsp;
-
-
-## Running the script
-When you run the script it will tell you what it will do on your system. Once completed there is a summary of the information you need to be aware of regarding your node setup which you can copy/paste to your local PC. **Make sure you keep this information safe for later.**
-
-If you want to run the script before setting up the node in your cold wallet the script will generate a priv key for you to use, otherwise you can supply the privkey during the script execution by pasting it into the SSH shel [right click for paste] when asked.
-
-&nbsp;
-
-
-## Masternode commands
-Because the masternode runs under a user account, you cannot login as root to your server and run `moondex-cli masternode status` (or other commands the "usual way"), if you do you will get an error. You need to switch the to the user that you installed the masternode under when running the script. **So make sure you keep the output of the script after it runs.**
-
-You can query each of your masternodes by first switching to the user the masternode is running as:
+If you wish to remove the binaries, run the below command as the root user (or use su):
 ```
- su - <username>
+rm -rf /usr/local/bin/moondex*
 ```
-
-If you are asked for a password, it is in the script output you received when you installed the masternode, you can right click and paste the password.
-The following commands can then be run against the node that is running as the user you just switched to.
-
-#### To query your masternodes status
-```
- moondex-cli masternode status
-```
-
-#### To query your masternode information
-```
- moondex-cli getinfo
-```
-
-#### To query your masternodes sync status
-```
- moondex-cli mnsync status
-```
-
-## Removing a masternode and user account
-If something goes wrong with your installation or you want to remove a masternode, you can do so with the following command.
-```
- userdel -r <username>
-```
-This will remove the user and its home directory. If you then re-run the installation script you can re-use that username.
 
 &nbsp;
 
