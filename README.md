@@ -1,6 +1,6 @@
 # MoonDEX Coin
 
-Shell script to install a `MoonDEX Coin Masternode` on a Linux server running Ubuntu 16.04. Supports IPv4, IPv6 and multiple nodes on a single VPS, it does not configure your iptables entries and will require post install steps to make additional masternodes work correctly if you install more than one.
+Shell script to install a `MoonDEX Coin Masternode` on a Linux server running Ubuntu 16.04. Supports IPv4 and multiple nodes on a single VPS.  IPv6 is supported by the script, but the current MoonDEX wallets do not support IPv6.  This script does not configure your VPS's iptables entries and will require separate install steps (see instructions) to make additional masternodes work correctly if you install more than one.
 
 **Make sure you read all the instructions below before using this script, it does not install your masternode under the root account and as such requires different commands to most other scripts**
 
@@ -12,23 +12,13 @@ To start the installation, login as `root` to your VPS and run the two commands 
 wget -q https://github.com/click2install/moondex/raw/master/install-moondex.sh  
 bash install-moondex.sh
 ```
-This script is intended to be used on a clean server, o# MoonDEX Coin
-
-Shell script to install a `MoonDEX Coin Masternode` on a Linux server running Ubuntu 16.04. Supports IPv4, IPv6 and multiple nodes on a single VPS.
-
-**Make sure you read all the instructions below before using this script, it does not install your masternode under the root account and as such requires different commands to most other scripts**
-
-
-## Installation
-To start the installation, login as `root` to your VPS and run the two commands listed below. Note that the masternode does not run as root but as a user that the script will create. The script, however, needs to run as root so your VPS can be configured correctly.
-
-```
-wget -q https://github.com/click2install/moondex/raw/master/install-moondex.sh  
-bash install-moondex.sh
-```
-This script is intended to be used on a clean server, or a server that has used this script to install 1 or more previous nodes. 
+This script is intended to be used on a clean server, or a server that has used this script to install 1 or more previous nodes.
 
 This script will work alongside masternodes that were installed by other means provided the masternode binaries `moondexd` and `moondex-cli` are installed to `/usr/local/bin`.
+
+
+**Make sure you read all the instructions below before using this script, it does not install your masternode under the root account and as such requires different commands to most other scripts**
+
 
 Donations for the creation and maintenance of this script are welcome at:
 &nbsp;
