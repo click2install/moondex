@@ -83,16 +83,15 @@ This script is intended to be used on a clean server, or a server that has used 
 
 This script will install the masternode binaries (executable files) `moondexd` and `moondex-cli` into the common directory `/usr/local/bin`.
 
-The script involves these responses from you:
-### A. Provide a user name.  This is the user that the masternode will be installed and run under (again, this is NOT the root user).
-### B. Provide a value for the RPCPORT setting (recommended values are provided in the script)
-###    You can (optionally) monitor the progress of the syncing and status of the MN when prompted.  When you are done (or just tired of watching), you can press Ctrl+c to return back to the install screen.
-###    Record the configuration information provided at the end of the installation.
+The script involves these steps requiring responses from you:
+1. **New Installation:** If this is detected as the first MDEX masternode on the vps, it will proceed as normal.  If it detects another MDEX masternode, it will ask you if you wish to proceed or abort.
+1. **IP Address:** The script will identify any available IP addresses on the VPS.  Select the address you wish to use.  Do **not** select an address that is already in use by another MDEX masternode.  Also, at present, MDEX does not support IPv6 addresses.
+1. **Masternode Key:** Either paste a desired masternode key, or press <Enter> to have the script generate one for you.  It will be reported to you at the end so you can copy it into your records.
+1. **User Name:** Provide a user name. This is the user that the masternode will be installed and run under (again, this is NOT the root user).
+1. **RPCPORT:** Provide a value for the RPCPORT setting (recommended values are provided in the script)
+1. **Monitor syncing:** You can (optionally) monitor the progress of the syncing and status of the MN when prompted.  When you are done syncing (or just tired of watching), you can press Ctrl+c to return back to the installation script screen.
+1. **Record the configuration information:** provided at the end of the installation.
 
-
-2. When you are finished this process you will get some information on what has been done as well as some important information you will need for your cold wallet setup.
-3. **Copy/paste the output of this script into a text file (or similar) and keep it safe.**
-4.
 
 ## 4. Start your Masternode from your local wallet (GUI wallet)
 After completing the above steps on the VPS, return to your local wallet (Windows, etc.)
