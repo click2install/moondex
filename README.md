@@ -5,6 +5,9 @@ Shell script to install a `MoonDEX Coin Masternode` on a Linux server running Ub
 **IMPORTANT:**
 *Make sure you read all the instructions below before using this script.  It does not install your masternode under the root account and as such, requires slightly different commands than most other scripts.*
 
+```css
+[BUG NOTICE] Although this script has been thoroughly tested with single and multiple MN setups with VULTR's VPSs, we have received a report that a MN configured with this script may not work properly on VPSs from other cloud service providers.  The suspected problem is related to the configuration of the "bind" setting in moondex.conf.  We have not yet been able to confirm this though, and have not yet "fixed" it.  If you encounter any difficulty with this script, contact either Bitmucker or click2install (the work-around is pretty simple).```
+
 Donations for the creation and maintenance of this script are welcome at:
 &nbsp;
 
