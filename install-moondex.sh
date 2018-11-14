@@ -12,7 +12,7 @@ COIN_NAME="moondex"
 CONFIG_FILE="${COIN_NAME}.conf"
 DEFAULT_USER_NAME="${COIN_NAME}-mn1"
 DAEMON_FILE="${COIN_NAME}d"
-CLI_FILE="${COIN_NAME}-cli" 
+CLI_FILE="${COIN_NAME}-cli"
 
 BINARIES_PATH=/usr/local/bin
 DAEMON_PATH="${BINARIES_PATH}/${DAEMON_FILE}"
@@ -29,23 +29,25 @@ export LC_ALL=C
 
 
 #************************************************************************************************
+# Confirm proper OS and user, and check if this is a 1st installation
 #************************************************************************************************
 function checks()
 {
-  if [[ $(lsb_release -d) != *16.04* ]]; then
+  if [[ $(lsb_release -d) != *16.04* ]]; then     # If not running correct version of Ubuntu
     echo -e " ${RED}You are not running Ubuntu 16.04. Installation is cancelled.${NC}"
     exit 1
   fi
 
-  if [[ $EUID -ne 0 ]]; then
+  if [[ $EUID -ne 0 ]]; then                      # If the user is NOT the root user
      echo -e " ${RED}$0 must be run as root so it can update your system and create the required masternode users.${NC}"
      exit 1
   fi
 
-  if [ -n "$(pidof ${DAEMON_FILE})" ]; then
+  if [ -n "$(pidof ${DAEMON_FILE})" ]; then       # If the MDEX MN daemon was found to already be running (existing MN found)
     read -e -p " $(echo -e The ${COIN_NAME} daemon is already running.${YELLOW} Do you want to add another master node? [Y/N] $NC)" NEW_NODE
     clear
-  else
+    echo -e "${NC}"
+  else                                            # If no other MDEX MN is found to be running, this is a new MN
     NEW_NODE="new"
   fi
 }
@@ -127,8 +129,8 @@ function prepare_system()
 #************************************************************************************************
 function deploy_binary()
 {
-  if [ -f ${DAEMON_PATH} ]; then
-    echo -e " ${GREEN}${COIN_NAME} daemon binary file already exists, using binary from ${DAEMON_PATH}.${NC}"
+  if [ -f ${DAEMON_PATH} ]; then      # If the executable is found in the expected place, don't bother installing it
+    echo -e " ${GREEN}${COIN_NAME} daemon binary file already exists in expected location [${DAEMON_PATH}].  Using this binary.${NC}"
   else
     cd ${TMP_FOLDER}
 
@@ -181,7 +183,7 @@ function ask_user()
 function check_port()
 {
   PORT=${DEFAULT_PORT}
-  echo -e "${YELLOW}Using Port ${PORT}.${NC}"
+  echo -e "${YELLOW}Using mandatory MDEX port ${PORT}.${NC}"
 #  declare -a PORTS
 
 #  PORTS=($(netstat -tnlp | awk '/LISTEN/ {print $4}' | awk -F":" '{print $NF}' | sort | uniq | tr '\r\n'  ' '))
@@ -242,7 +244,7 @@ function ask_rpcport()
 
 
 #************************************************************************************************
-# Query the available IP addresses on the machine.  Note that while it will idenitfy IPv6
+# Query the available IP addresses on the machine.  Note that while it will identify IPv6
 #  addresses, and a MN with an IPv6 address will sync, we have thus far been unable to get
 #  IPv6 to work on the local wallet side.  Therefore, IPv6 is not recommended at present.
 #************************************************************************************************
@@ -272,12 +274,29 @@ function ask_ip()
         echo -e " [${INDEX}] ${ip}"
         let INDEX=${INDEX}+1
       done
-      echo -e " ${YELLOW}Which IP address do you want to use?${NC}"
-      echo -e " ${YELLOW}(Note that Masternodes using IPv6 addresses may not function properly at present.)${NC}"
-      read -e choose_ip
-      NODEIP=${NODE_IPS[$choose_ip]}
+      echo -e " ${YELLOW}Note that Masternodes using IPv6 addresses may not function properly at present.${NC}"
+
+      NODEIP=""
+      while [[ "$NODEIP" = "" ]]
+      do
+          echo -e " ${YELLOW}Which IP address do you want to use? Enter number 0,1,2,etc.${NC}"
+          read -e choose_ip
+          NODEIP=${NODE_IPS[$choose_ip]}
+
+          if [[ -z "${NODEIP}" ]]; then     #Check for invalid IP address selection
+              echo -e " ${RED}Invalid IP address selection. Try again.${NC}"
+              #echo -e "${NC}"
+              sleep 1.0s
+              #exit 0
+          else
+              echo -e " Selected IP address: ${NODEIP}${NC}"
+              echo -e "${NC}"
+          fi
+      done
+
   else
     NODEIP=${NODE_IPS[0]}
+    echo -e "${NC}"
   fi
 }
 
@@ -287,11 +306,16 @@ function ask_ip()
 #************************************************************************************************
 function create_key()
 {
-  read -e -p "$(echo -e ${YELLOW} Paste your masternode private key and press ENTER or leave it blank to generate a new private key using genkey.$NC)" PRIVKEY
+
+  #read -e -p "$(echo -e ${YELLOW}Paste your masternode private key and press ENTER or leave it blank to generate a new private key using genkey.$NC)" PRIVKEY
+  echo -e " ${YELLOW}Paste your masternode private key and press ENTER or leave it blank to generate a new private key using genkey.${NC}"
+  read -e PRIVKEY
 
   if [[ -z "${PRIVKEY}" ]]; then
-    get_key
+      echo -e " ${YELLOW}No key entered. Generating new private key...${NC}"
+      get_key
   fi
+  echo -e "${NC}"
 }
 
 
@@ -333,6 +357,7 @@ function create_config()
 {
   RPCUSER=$(pwgen -s 8 1)
   RPCPASSWORD=$(pwgen -s 15 1)
+
   cat << EOF > ${HOME_FOLDER}/${CONFIG_FILE}
 rpcuser=${RPCUSER}
 rpcpassword=${RPCPASSWORD}
@@ -344,23 +369,36 @@ server=1
 daemon=1
 staking=1
 
-EOF
-}
-
-
-#************************************************************************************************
-# Add more information to the configuration file (also see create_config)
-#************************************************************************************************
-function update_config()
-{
-  cat << EOF >> ${HOME_FOLDER}/${CONFIG_FILE}
 logtimestamps=1
 maxconnections=256
 masternode=1
 
-externalip=${NODEIP}
-bind=${NODEIP}
 masternodeprivkey=${PRIVKEY}
+externalip=${NODEIP}
+EOF
+
+# If this is not the first MN on the VPS, then define the bind address.
+if [ -n "$(pidof ${DAEMON_FILE})" ]; then       # If the MDEX MN daemon was found to already be running (existing MN found)
+  cat << EOF > ${HOME_FOLDER}/${CONFIG_FILE}
+bind=${NODEIP}
+
+EOF
+else                                            # If no other MDEX MN is found to be running, this is a new MN
+  cat << EOF > ${HOME_FOLDER}/${CONFIG_FILE}
+#bind=${NODEIP}
+
+EOF
+fi
+
+}
+
+
+#************************************************************************************************
+# Add some peer nodes to the configuration file (also see create_config)
+#************************************************************************************************
+function update_config()
+{
+  cat << EOF >> ${HOME_FOLDER}/${CONFIG_FILE}
 
 addnode=45.32.140.21
 addnode=104.18.51.247
@@ -398,6 +436,7 @@ function enable_firewall()
 
 
 #************************************************************************************************
+# Set up and deploy sentinel for MN
 #************************************************************************************************
 function deploy_sentinel()
 {
@@ -481,6 +520,7 @@ EOF
 
 
 #************************************************************************************************
+# Manage log files
 #************************************************************************************************
 function add_log_truncate()
 {
@@ -551,10 +591,11 @@ function show_output()
 #************************************************************************************************
 function ask_watch()
 {
-  read -e -p " $(echo -e ${YELLOW}OPTIONAL: Do you want to watch the ${COIN_NAME} daemon status whilst it is synchronizing? Use Ctrl+C to exit. [Y/N]${NC})" WATCH_CHOICE
+  read -e -p " $(echo -e ${YELLOW}OPTIONAL: Do you want to watch the ${COIN_NAME} daemon status whilst it is synchronizing?  [Y/N]${NC})" WATCH_CHOICE
 #  read -e -p " $(printf ${YELLOW}OPTIONAL: Do you want to watch the ${COIN_NAME} daemon status whilst it is synchronizing? Use Ctrl+C to exit. [Y/N]${NC})" WATCH_CHOICE
 
   if [[ ("${WATCH_CHOICE}" == "y" || "${WATCH_CHOICE}" == "Y") ]]; then
+    echo -e "${YELLOW}Use Ctrl+C to exit watching and return to command prompt.${NC}"
     local cmd=$(echo "${CLI_PATH} -datadir=${HOME_FOLDER} -conf=${HOME_FOLDER}/${CONFIG_FILE} getinfo && ${CLI_PATH} -datadir=${HOME_FOLDER} -conf=${HOME_FOLDER}/${CONFIG_FILE} mnsync status && ${CLI_PATH} -datadir=${HOME_FOLDER} -conf=${HOME_FOLDER}/${CONFIG_FILE} masternode status")
     watch -n 5 ${cmd}
   fi
@@ -594,7 +635,7 @@ echo -e "                                    88 YY 88 8888Y\"  888888 dP  Yb"
 echo
 echo
 echo -e "${NC}"
-echo -e " Install script version 1.0"
+echo -e " Install script version 1.1"
 echo -e " This script will automate the installation of your ${COIN_NAME} coin masternode and server configuration by"
 echo -e " performing the following steps:"
 echo
@@ -622,19 +663,20 @@ echo -e "${NC}"
 read -e -p "$(echo -e ${YELLOW} Do you want to continue? [Y/N] ${NC})" CHOICE
 
 if [[ ("${CHOICE}" == "n" || "${CHOICE}" == "N") ]]; then
-  exit 1;
+  exit 1;                   # Exit from script
 fi
 
-checks
+checks                      # Perform some basic checks (linux version, user, existing MDEX MN)
 
-if [[ ("${NEW_NODE}" == "y" || "${NEW_NODE}" == "Y") ]]; then
+if [[ ("${NEW_NODE}" == "y" || "${NEW_NODE}" == "Y") ]]; then     # Another MN was found running, and user wants to continue to install another.
+  deploy_binary             # In case previous node was not installed as expected, then install it again.
   setup_node
   exit 0
-elif [[ "${NEW_NODE}" == "new" ]]; then
+elif [[ "${NEW_NODE}" == "new" ]]; then       # No other MDEX MN found to be running.  This will be a new one.
   prepare_system
   deploy_binary
   setup_node
-else
-  echo -e "${GREEN}${COIN_NAME} daemon already running.${NC}"
+else                                          # Another MN was found running, and user has decided to NOT proceed with installing another.
+  echo -e "${GREEN}${COIN_NAME} daemon already running. User has selected to not proceed with new installation.${NC}"
   exit 0
 fi
