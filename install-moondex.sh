@@ -284,12 +284,12 @@ function ask_ip()
           NODEIP=${NODE_IPS[$choose_ip]}
 
           if [[ -z "${NODEIP}" ]]; then     #Check for invalid IP address selection
-              echo -e " ${RED}Invalid IP address selection. Try again.${NC}"
+              echo -e " ${RED}Invalid IP address selection: ${choose_ip}. Try again.${NC}"
               #echo -e "${NC}"
               sleep 1.0s
               #exit 0
           else
-              echo -e " Selected IP address: ${NODEIP}${NC}"
+              echo -e " ${YELLOW}Selected IP address: ${NODEIP}${NC}"
               echo -e "${NC}"
           fi
       done
