@@ -6,7 +6,8 @@ Shell script to install a `MoonDEX Coin Masternode` on a Linux server running Ub
 *Make sure you read all the instructions below before using this script.  It does not install your masternode under the root account and as such, requires slightly different commands than most other scripts.*
 
 ```css
-[BUG-REPORTS] None at present.
+[BUG-REPORTS] If user enters a wildly wrong IP address selection that is a character string, the
+script will currently default to the first IP in the list (whether it is wanted or not).
 
 ```
 
