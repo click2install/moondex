@@ -580,7 +580,7 @@ function show_output()
  echo -e "  - ${GREEN}${CLI_FILE} masternode status${NC} to retreive a masternode status summary"
  echo
  #echo -e "   running the ${GREEN}${CLI_FILE} getinfo${NC} command."
- echo -e "   NOTE: the ${DAEMON_FILE} daemon must be running first before trying this command. See notes above on service commands usage."
+ echo -e "   NOTE: the ${DAEMON_FILE} daemon must be running first before trying these commands. See notes above on service commands usage."
  echo
  echo -e " Make sure you keep the information above somewhere private and secure so you can refer back to it."
  echo -e "${RED} NEVER SHARE YOUR PRIVKEY WITH ANYONE, IF SOMEONE OBTAINS IT THEY CAN STEAL ALL YOUR COINS.${NC}"
