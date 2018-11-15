@@ -157,6 +157,13 @@ The following commands can then be run under the user you just switched to.
  moondex-cli masternode status
 ```
 
+#### General Masternode start/stop/status commands:
+```
+systemctl start <username>.service
+systemctl stop <username>.service
+systemctl status <username>.service
+```
+
 &nbsp;
 
 ## 7. Removing a masternode and user account
