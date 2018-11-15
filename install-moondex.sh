@@ -358,6 +358,7 @@ function create_config()
   RPCUSER=$(pwgen -s 8 1)
   RPCPASSWORD=$(pwgen -s 15 1)
 
+#Create moondex.conf file (overwriting any previous contents)
   cat << EOF > ${HOME_FOLDER}/${CONFIG_FILE}
 rpcuser=${RPCUSER}
 rpcpassword=${RPCPASSWORD}
@@ -378,14 +379,17 @@ externalip=${NODEIP}
 EOF
 
 # If this is not the first MN on the VPS, then define the bind address.
+# Add any bind= text to end of moondex.conf file (appending to any previous contents)
 if [ -n "$(pidof ${DAEMON_FILE})" ]; then       # If the MDEX MN daemon was found to already be running (existing MN found)
-  cat << EOF > ${HOME_FOLDER}/${CONFIG_FILE}
+  cat << EOF >> ${HOME_FOLDER}/${CONFIG_FILE}
 bind=${NODEIP}
 
 EOF
 else                                            # If no other MDEX MN is found to be running, this is a new MN
-  cat << EOF > ${HOME_FOLDER}/${CONFIG_FILE}
-#bind=${NODEIP}
+
+#Note that the below code option (declaring bind even on 1st MN usually works.)
+  cat << EOF >> ${HOME_FOLDER}/${CONFIG_FILE}
+bind=${NODEIP}
 
 EOF
 fi
@@ -398,6 +402,7 @@ fi
 #************************************************************************************************
 function update_config()
 {
+  # Add lines to end of moondex.conf file (appending to any previous contents)
   cat << EOF >> ${HOME_FOLDER}/${CONFIG_FILE}
 
 addnode=45.32.140.21
@@ -406,7 +411,8 @@ addnode=149.28.251.54
 addnode=149.28.106.146
 addnode=104.238.162.199
 EOF
-  chown ${USER_NAME}: ${HOME_FOLDER}/${CONFIG_FILE} >/dev/null
+#chown ${USER_NAME}: ${HOME_FOLDER}/${CONFIG_FILE} >/dev/null
+  chown ${USER_NAME} ${HOME_FOLDER}/${CONFIG_FILE} >/dev/null
 }
 
 
