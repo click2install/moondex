@@ -281,7 +281,7 @@ function ask_ip()
         echo -e " [${INDEX}] ${ip}"
         let INDEX=${INDEX}+1
       done
-      echo -e " ${YELLOW}Note that Masternodes using IPv6 addresses may not function properly at present.${NC}"
+      #echo -e " ${YELLOW}Note that Masternodes using IPv6 addresses may not function properly at present.${NC}"
 
       NODEIP=""
       while [[ "$NODEIP" = "" ]]
