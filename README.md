@@ -13,11 +13,12 @@ Donations for the creation and maintenance of this script are welcome at:
 &nbsp;
 
 MDEX: XoDpG5yrZ3UTtAywge5wNZAbhmxJi7SZbh
-
 BTC: 1DJdhFp6CiVZSBSsXcecp1FnuHXDcsYQPu
 
 &nbsp;
 
+### Masternode Hardware Requirements
+The first several months of the MDEX blockchain’s functioning suggests that a good “rule of thumb” is for each server to have at least 250MB of RAM and 10GB of disk storage. Note however, that if you have less than this amount of RAM, you can use a swap disk to offset this limitation (included as part of this install process).  This may change in the future as the project matures and demands more of the MN hardware.
 
 ### Summary of steps
 1. Configure VPS to have one IP for each MDEX MN being installed on it (through VPS provider).
