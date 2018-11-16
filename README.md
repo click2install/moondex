@@ -6,16 +6,7 @@ Shell script to install a `MoonDEX Coin Masternode` on a Linux server running Ub
 *Make sure you read all the instructions below before using this script.  It does not install your masternode under the root account and as such, requires slightly different commands than most other scripts.*
 
 ```css
-[BUG-REPORTS]
-Issue 1 (Nov 14, 2018): If user enters a wildly wrong IP address selection that is a character string, the
-script will currently default to the first IP in the list (whether it is wanted or not).
-
-Issue 2 (Nov 14, 2018): For those who have NOT set up their VPS to have IPv6 enabled, this problem
-  may occur for the 2nd, 3rd, etc. masternode on the VPS...
-  If your list of IP addresses has any blank values (the list generated for you
-  during the install), the second MN's number will be off by one, confusing the script (and user).
-  A workaround is to subtract the number of blank IPs from the desired interface number in the list.
-  Ask Bitmucker for help.  Its easy to do, but complicated to explain.  A fix is in the works.
+[BUG-REPORTS] No current issues.
 ```
 
 Donations for the creation and maintenance of this script are welcome at:
