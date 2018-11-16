@@ -253,21 +253,28 @@ function ask_ip()
   declare -a NODE_IPS
   declare -a NODE_IPS_STR
 
-  for ips in $(netstat -i | awk '!/Kernel|Iface|lo/ {print $1," "}')
+  for ips in $(netstat -i | awk '!/Kernel|Iface|lo/ {print $1," "}')    #For each available interface (ens3, ens3:1, etc.)
   do
-    ipv4=$(curl --interface ${ips} --connect-timeout 2 -s4 icanhazip.com)
-    NODE_IPS+=(${ipv4})
-    NODE_IPS_STR+=("$(echo -e [IPv4] ${ipv4})")
+    ipv4=$(curl --interface ${ips} --connect-timeout 2 -s4 icanhazip.com) #Get IP for current interface ID and assign to ipv4
+    NODE_IPS+=(${ipv4})                                                 #Add current IP to array of ipv4 addresses
+    NODE_IPS_STR+=("$(echo -e [IPv4] ${ipv4})")                         #Add new line to string array of addresses
 
-    ipv6=$(curl --interface ${ips} --connect-timeout 2 -s6 icanhazip.com)
-    NODE_IPS+=(${ipv6})
-    NODE_IPS_STR+=("$(echo -e [IPv6] ${ipv6})")
+#    ipv6=$(curl --interface ${ips} --connect-timeout 2 -s6 icanhazip.com)
+#    NODE_IPS+=(${ipv6})
+    #Below doesn't work right if IPv6 isn't set up on the MN (reports blank IP)
+
+#if [[ ${ipv6} == "" ]]; then    #Trap case where IPv6 was not enabled on VPS and reports a null string for address
+#  NODE_IPS_STR+=("$(echo -e [IPv6] ${RED}Not available${NC})")
+#  #echo -e "ipv6 appears to be blank."
+#else
+#  NODE_IPS_STR+=("$(echo -e [IPv6] ${ipv6})")
+#fi
   done
 
   echo
   if [ ${#NODE_IPS[@]} -gt 1 ]
     then
-      echo -e " ${GREEN}More than one IP address found.${NC}"
+      echo -e " ${GREEN}More than one IP address found (${#NODE_IPS[@]} found).${NC}"
       INDEX=0
       for ip in "${NODE_IPS_STR[@]}"
       do
@@ -283,11 +290,10 @@ function ask_ip()
           read -e choose_ip
           NODEIP=${NODE_IPS[$choose_ip]}
 
-          if [[ -z "${NODEIP}" ]]; then     #Check for invalid IP address selection
+          if [[ -z "${NODEIP}" ]]; then     #Check for invalid IP address selection (number outside of range)
               echo -e " ${RED}Invalid IP address selection: ${choose_ip}. Try again.${NC}"
-              #echo -e "${NC}"
               sleep 1.0s
-              #exit 0
+              NODEIP=""
           else
               echo -e " ${YELLOW}Selected IP address: ${NODEIP}${NC}"
               echo -e "${NC}"
