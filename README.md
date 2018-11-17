@@ -162,7 +162,8 @@ The following commands can then be run under the user you just switched to.
 systemctl start <username>.service
 systemctl stop <username>.service
 systemctl status <username>.service
-```The MDEX masternode uses a sentinel that runs as a service (a Linux application that runs in the background).  The sentinel helps the masternode automatically re-start on its own if needed.  To properly shut the masternode down (so it stays shut down) you should use the above `systemctl stop <username>.service` command (versus the `moondex-cli stop` command),
+```
+The MDEX masternode uses a sentinel that runs as a service (a Linux application that runs in the background).  The sentinel helps the masternode automatically re-start on its own if needed.  To properly shut the masternode down (so it stays shut down) you should use the above `systemctl stop <username>.service` command (versus the `moondex-cli stop` command).
 
 
 &nbsp;
