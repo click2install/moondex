@@ -115,7 +115,7 @@ After completing the above steps on the VPS, return to your local wallet (Window
 
  &nbsp;
 
-## 5. Multiple master nodes on one server
+## 5. Multiple masternodes on one server
 The script allows for multiple nodes to be setup on the same server, using different IP addresses and different rpcport values.  The script will automatically detect if your installation is the first on the VPS, or if it is a multiple-MN installation.  
 
 Generally, the overall installation process is the same for additional MDEX masternodes on the same VPS (Steps 1-4 above).
