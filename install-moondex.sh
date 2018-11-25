@@ -54,7 +54,7 @@ function checks()
 
 
 #************************************************************************************************
-# Perform updates, upgrades, and install dependencies
+# Perform updates, upgrades, and install dependencies.  Setup swap space
 #************************************************************************************************
 function prepare_system()
 {
