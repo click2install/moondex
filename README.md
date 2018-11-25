@@ -176,10 +176,11 @@ First, log in as the `root` user.  If the masternode is still running, you can h
   systemctl stop <username>.service   
 ```
 
+Remove the user and its home directory.
 ```
  userdel -r <username>
 ```
-This will remove the user and its home directory. If you then re-run the installation script you can re-use that username.
+If you then re-run the installation script you can re-use that username.
 
 If you wish to remove the binaries, run the below command as the root user (or use su).  Note, if you have another MDEX masternode running on the samve VPS that you do not wish to uninstall, then do NOT remove the binaries.
 ```
