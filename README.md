@@ -170,13 +170,18 @@ The MDEX masternode uses a sentinel that runs as a service (a Linux application 
 &nbsp;
 
 ## 7. Removing a masternode and user account
-If something goes wrong with your installation or you want to remove a masternode, you can do so with the following command.
+If something goes wrong with your installation or you want to remove a masternode, you can do so with the following commands.
+First, log in as the `root` user.  If the masternode is still running, you can halt the service using
+```
+  systemctl stop <username>.service   
+```
+
 ```
  userdel -r <username>
 ```
 This will remove the user and its home directory. If you then re-run the installation script you can re-use that username.
 
-If you wish to remove the binaries, run the below command as the root user (or use su):
+If you wish to remove the binaries, run the below command as the root user (or use su).  Note, if you have another MDEX masternode running on the samve VPS that you do not wish to uninstall, then do NOT remove the binaries.
 ```
 rm -rf /usr/local/bin/moondex*
 ```
