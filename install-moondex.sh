@@ -412,11 +412,10 @@ function update_config()
   # Add lines to end of moondex.conf file (appending to any previous contents)
   cat << EOF >> ${HOME_FOLDER}/${CONFIG_FILE}
 
-addnode=45.32.140.21
-addnode=104.18.51.247
-addnode=149.28.251.54
-addnode=149.28.106.146
-addnode=104.238.162.199
+addnode=95.216.82.97
+addnode=95.216.82.98
+addnode=45.63.65.246
+addnode=68.224.149.37
 EOF
 #chown ${USER_NAME}: ${HOME_FOLDER}/${CONFIG_FILE} >/dev/null
   chown ${USER_NAME} ${HOME_FOLDER}/${CONFIG_FILE} >/dev/null
