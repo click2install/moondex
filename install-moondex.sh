@@ -369,18 +369,19 @@ function create_config()
   cat << EOF > ${HOME_FOLDER}/${CONFIG_FILE}
 rpcuser=${RPCUSER}
 rpcpassword=${RPCPASSWORD}
-rpcallowip=127.0.0.1
-port=${PORT}
-rpcport=${RPCPORT}
-listen=1
-server=1
-daemon=1
-staking=1
 
+rpcallowip=127.0.0.1
+server=1
+dbcache=4
+daemon=1
+listen=1
+port=${PORT}
 logtimestamps=1
-maxconnections=256
+maxconnections=8
+rpcthreads=8
 masternode=1
 
+rpcport=${RPCPORT}
 masternodeprivkey=${PRIVKEY}
 externalip=${NODEIP}
 EOF
